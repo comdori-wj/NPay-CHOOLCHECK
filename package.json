@@ -1,5 +1,12 @@
 {
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
+    "node-schedule": "^2.1.0",
     "puppeteer": "^19.4.0"
   }
 }
