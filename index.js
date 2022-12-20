@@ -10,6 +10,7 @@
  * -----------------------------------------------------------
  * 2022/12/15        wj       최초 생성
  * 2022/12/16        wj       네이버 자동 로그인 기능 구현
+ * 2022/12/17        wj       포인트 적립 기능 구현
  */
 
 import puppeteer from 'puppeteer'; //
@@ -41,7 +42,7 @@ if (!config.id || !config.pw) {
 
     const autoWork = schedule.scheduleJob('10 00 10 * * *', () => { // 오전 8시 이벤트
         console.log("네이버 페이 자동 출첵이 시작되었습니다.");
-        Job();
+        // Job();
     })
     const autoWork2 = schedule.scheduleJob('00 00 10 * * *', () => {
         //Job2();
@@ -56,7 +57,7 @@ if (!config.id || !config.pw) {
     try {
         // await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[1]/div[1]/input");
         // await page.type("#id", config.id);
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
         await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
             document.querySelector('#id').value = id;
             document.querySelector('#pw').value = pw;
@@ -69,9 +70,9 @@ if (!config.id || !config.pw) {
         throw Error("id, pw를 입력하지 못했습니다. 확인해 주십시오: " + e);
     }
     try { // 로그인 처리
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
         await page.click("#log\\.login");
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(5000); // 대기
         await page.screenshot({
             path: 'Screenshot/loginOk.png', fullPage:false
         });
@@ -83,21 +84,25 @@ if (!config.id || !config.pw) {
         throw Error("로그인 하지 못했습니다. 계정을 확인해 주세요." +e);
     }
 
+    try {
+        await page.goto('https://ofw.adison.co/u/naverpay/ads/55162') // 오전 8시 마이스토어
 
-    // try {
-    //     await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[1]/div[1]/input");
-    //     await page.type("#id", config.id);
-    //     await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[1]/div[2]/input");
-    //     await page.type("#pw", config.pw);
-    // } catch (e) {
-    //     throw Error("id, pw를 입력하지 못했습니다. 확인해 주십시오: " + e);
-    // }
-    //await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[7]/button");
-   // await page.click("#log\\.login");
+    }catch (e) {
+        let errorMsg = "페에지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        throw Error(errorMsg + e);
+        //console.log(errorMsg, e);
+    }
+    try {
+        await page.waitForTimeout(7000);
+        await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+        await page.waitForTimeout(3000);
+        await page.screenshot({
+            path: 'Screenshot/NPayResult1.png', fullPage:false
+        });
+    } catch (e) {
+        throw  Error("포인트 받기 버튼 클릭 실패!" + e);
+    }
 
-    //     await page.click("#app > div:nth-child(2) > div > div > div > button");
-    // }catch (e) {
-    //     throw Error("오류발생! 포인트를 얻지 못했습니다. 다시 시도 해주세요.");
-    // }
+
 })();
 
