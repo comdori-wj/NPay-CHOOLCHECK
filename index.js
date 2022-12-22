@@ -11,6 +11,7 @@
  * 2022/12/15        wj       최초 생성
  * 2022/12/16        wj       네이버 자동 로그인 기능 구현
  * 2022/12/17        wj       포인트 적립 기능 구현
+ * 2022/12/20        wj       포인트 적립 기능 구현 및 수정
  */
 
 import puppeteer from 'puppeteer'; //
@@ -19,7 +20,6 @@ import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러
 
 if (!config.agree) {
     throw Error('config.js에서 동의를 해 주시기 바랍니다.');
-    console.log("config.js에서 동의를 해 주시기 바랍니다.");
 }
 
 if (!config.id || !config.pw) {
@@ -32,7 +32,6 @@ if (!config.id || !config.pw) {
         browser = await puppeteer.launch(config.puppeteer.launchOptions);
     } catch (e) {
         throw Error("브라우저를 실행 할 수 없습니다: " + e);
-        console.log("브라우저 실행 불가 : ",e);
     }
 
     // const browser = await puppeteer.launch({
@@ -43,9 +42,6 @@ if (!config.id || !config.pw) {
     const autoWork = schedule.scheduleJob('10 00 10 * * *', () => { // 오전 8시 이벤트
         console.log("네이버 페이 자동 출첵이 시작되었습니다.");
         // Job();
-    })
-    const autoWork2 = schedule.scheduleJob('00 00 10 * * *', () => {
-        //Job2();
     })
 
     const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
@@ -79,18 +75,18 @@ if (!config.id || !config.pw) {
     } catch (e) {
         await page.waitForTimeout(5000);
         await page.screenshot({
-            path: 'Screenshot/loginNo.png', fullPage:false
+            path: 'Screenshot/loginFail.png', fullPage:false
         });
         throw Error("로그인 하지 못했습니다. 계정을 확인해 주세요." +e);
     }
 
+    ////////////////////1차 광고////////////////////
     try {
-        await page.goto('https://ofw.adison.co/u/naverpay/ads/55162') // 오전 8시 마이스토어
+        await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
 
     }catch (e) {
-        let errorMsg = "페에지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        let errorMsg = "1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
         throw Error(errorMsg + e);
-        //console.log(errorMsg, e);
     }
     try {
         await page.waitForTimeout(7000);
@@ -100,9 +96,35 @@ if (!config.id || !config.pw) {
             path: 'Screenshot/NPayResult1.png', fullPage:false
         });
     } catch (e) {
+        await page.waitForTimeout(2000);
+        await page.screenshot({
+            path: 'Screenshot/NPayFail1.png', fullPage:false
+        });
         throw  Error("포인트 받기 버튼 클릭 실패!" + e);
     }
 
+    ////////////////////2차 광고////////////////////
+    try {
+        await page.waitForTimeout(3000);
+        await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
+    }catch (e) {
+        let errorMsg = "2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        throw Error(errorMsg + e);
+    }
+    try {
+        await page.waitForTimeout(7000);
+        await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+        await page.waitForTimeout(3000);
+        await page.screenshot({
+            path: 'Screenshot/NPayResult2.png', fullPage:false
+        });
+    } catch (e) {
+        await page.waitForTimeout(2000);
+        await page.screenshot({
+            path: 'Screenshot/NPayFail2.png', fullPage:false
+        });
+        throw  Error("포인트 받기 버튼 클릭 실패!" + e);
+    }
 
 })();
 
