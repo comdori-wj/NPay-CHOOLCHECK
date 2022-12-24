@@ -12,6 +12,7 @@
  * 2022/12/16        wj       네이버 자동 로그인 기능 구현
  * 2022/12/17        wj       포인트 적립 기능 구현
  * 2022/12/20        wj       포인트 적립 기능 구현 및 수정
+ * 2022/12/23        wj       3차 광고 추가
  */
 
 import puppeteer from 'puppeteer'; //
@@ -122,6 +123,30 @@ if (!config.id || !config.pw) {
         await page.waitForTimeout(2000);
         await page.screenshot({
             path: 'Screenshot/NPayFail2.png', fullPage:false
+        });
+        throw  Error("포인트 받기 버튼 클릭 실패!" + e);
+    }
+
+    ////////////////////3차 광고////////////////////
+    try {
+        await page.waitForTimeout(2000);
+        await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립
+
+    }catch (e) {
+        let errorMsg = "3차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        throw Error(errorMsg + e);
+    }
+    try {
+        await page.waitForTimeout(7000);
+        await page.click("#app > div:nth-child(2) > div > div > div > button");
+        await page.waitForTimeout(3000);
+        await page.screenshot({
+            path: 'Screenshot/NPayResult3.png', fullPage:false
+        });
+    } catch (e) {
+        await page.waitForTimeout(2000);
+        await page.screenshot({
+            path: 'Screenshot/NPayFail3.png', fullPage:false
         });
         throw  Error("포인트 받기 버튼 클릭 실패!" + e);
     }

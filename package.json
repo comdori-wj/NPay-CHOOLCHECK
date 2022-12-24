@@ -1,4 +1,7 @@
 {
+  "name": "npay",
+  "version": "1",
+  "main": "index.js",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",

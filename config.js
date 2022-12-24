@@ -10,6 +10,7 @@
  * -----------------------------------------------------------
  * 2022/12/15        wj       최초 생성
  * 2022/12/16        wj       환경 설정 기능 코딩
+ * 2022/12/24        wj       크롬 경로 주석 처리
  */
 
 const config = {
@@ -23,7 +24,7 @@ const config = {
             //devtools: true,
             headless: false,
             //slowMo: 500,
-            executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
             args: [],
         },
         viewportOptions: {
