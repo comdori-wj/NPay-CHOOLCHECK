@@ -1,6 +1,6 @@
 {
-  "name": "npay",
-  "version": "1",
+  "name": "NPay-CHOOLCHECK",
+  "version": "1.0.6",
   "main": "index.js",
   "license": "UNLICENSED",
   "private": true,

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/NaverPay-attendanceCheck.iml" filepath="$PROJECT_DIR$/.idea/NaverPay-attendanceCheck.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/NPay-CHOOLCHECK.iml" filepath="$PROJECT_DIR$/.idea/NPay-CHOOLCHECK.iml" />
     </modules>
   </component>
 </project>
