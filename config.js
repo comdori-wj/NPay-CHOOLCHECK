@@ -1,16 +1,17 @@
 /**
  Created by WebStorm IDEA.
- * projectName    : NaverPay-attendanceCheck(가칭: NPayCHOOLCHECK(앤페이출첵))
+ * projectName    : NPay-CHOOLCHECK(앤페이-출첵)
  * fileName       : index
  * author         : wj
  * date           : 2022/12/15
- * description    : NPayCHOOLCHECK 프로그램 환경설정
+ * description    : NPay-CHOOLCHECK 프로그램 환경설정
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2022/12/15        wj       최초 생성
  * 2022/12/16        wj       환경 설정 기능 코딩
  * 2022/12/24        wj       크롬 경로 주석 처리
+ * 2022/12/29        wj       도커 경로 셋팅 및 코드 정리
  */
 
 const config = {
@@ -20,12 +21,15 @@ const config = {
     agree: true,
     puppeteer: {
         launchOptions: {
-            //defaultViewport: null,
-            //devtools: true,
-            headless: false,
-            //slowMo: 500,
+            // defaultViewport: null,
+            // devtools: true,
+            // headless: false, // 브라우저 띄움
+            // slowMo: 500,
             // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-            args: [],
+            // args: [],
+            executablePath: process.env.CHROMIUM_PATH,
+            args: ['--no-sandbox'], // This was important. Can't remember why
+
         },
         viewportOptions: {
             width: 1080,
