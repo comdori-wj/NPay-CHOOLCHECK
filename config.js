@@ -23,12 +23,12 @@ const config = {
         launchOptions: {
             // defaultViewport: null,
             // devtools: true,
-            // headless: false, // 브라우저 띄움
+            headless: false, // 브라우저 띄움
             // slowMo: 500,
-            // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-            // args: [],
-            executablePath: process.env.CHROMIUM_PATH,
-            args: ['--no-sandbox'], // This was important. Can't remember why
+            executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            args: []
+            // executablePath: process.env.CHROMIUM_PATH,
+            // args: ['--no-sandbox'], // This was important. Can't remember why
 
         },
         viewportOptions: {

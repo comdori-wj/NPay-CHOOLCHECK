@@ -15,6 +15,7 @@
  * 2022/12/23        wj       3차 광고 추가
  * 2022/12/27        wj       지정된 시간에 자동 실행 구현
  * 2022/12/28        wj       프로그램(프로젝트) 이름 변경, 성공 및 실패 메시지 추가
+ * 2022/12/30        wj       코드 정리 1차 및 프로그램 알고리즘 개선 작업1
   */
 
 import puppeteer from 'puppeteer'; //
@@ -37,16 +38,103 @@ if (!config.id || !config.pw) {
         throw Error("브라우저를 실행 할 수 없습니다: " + e);
     }
 
-    // const browser = await puppeteer.launch({
-    //     headless: false,
-    //     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    // });
     console.log("네이버 페이 출첵 프로그램이 실행되었습니다.");
 
     const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
     await page.setViewport({
         width: 1280, height: 1024
     }); // 화면 크기
+
+    await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
+    try {
+        await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
+        await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
+            document.querySelector('#id').value = id;
+            document.querySelector('#pw').value = pw;
+        }, config.id, config.pw);
+
+        await page.click("#keep"); //로그인 상태 유지 버튼
+    } catch (e) {
+        throw Error("id, pw를 입력하지 못했습니다. 오류를 확인해 주십시오: " + e);
+        await page.screenshot({
+            path: 'Screenshot/idPwInputFail.png', fullPage: false
+        });
+    }
+    try { // 로그인 처리
+        await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
+        await page.click("#log\\.login");
+        await page.waitForTimeout(5000); // 대기
+        await page.screenshot({
+            path: 'Screenshot/loginOk.png', fullPage: false
+        });
+        console.log("로그인을 성공하였습니다.");
+    } catch (e) {
+        await page.waitForTimeout(5000);
+        await page.screenshot({
+            path: 'Screenshot/loginFail.png', fullPage: false
+        });
+        throw Error("로그인 하지 못했습니다. 계정을 확인해 주세요." + e);
+    }
+
+    ////////////////////1차 광고 개발용////////////////////
+    try {
+        await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
+        await page.screenshot({
+            path: 'Screenshot/NPay1.png', fullPage: false
+        });
+        console.log("1차 광고 페이지 접속에 성공하였습니다.")
+    } catch (e) {
+        let errorMsg = "1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        await page.screenshot({
+            path: 'Screenshot/NPayFailAccess1.png', fullPage: false
+        });
+        throw Error(errorMsg + e);
+    }
+    try {
+        await page.waitForTimeout(5000);
+
+        // let possibleBtn = "                  참여하고 포인트받기";
+        let completionBtn = "참여 완료";
+        const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+        const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+        console.log("버튼텍스트: "+btnText);
+
+        await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+        await page.waitForTimeout(3000);
+
+        if(completionBtn == btnText){
+            console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.");
+            await page.screenshot({
+                path: 'Screenshot/NPayResult1.png', fullPage: false
+            });
+            return;
+        }
+
+        let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+        const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+        const modalText = await page.evaluate(modal => modal.textContent, modal);
+        console.log("모달텍스트: "+modalText);
+
+        if(endAd == modalText){
+            await page.screenshot({
+                path: 'Screenshot/NPayEnd1.png', fullPage: false
+            });
+            console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+            return;
+        } else{
+            await page.screenshot({
+                path: 'Screenshot/NPaySuccess1.png', fullPage: false
+            });
+            console.log("1차 적립을 성공하였습니다.")
+        }
+
+    } catch (e) {
+        await page.waitForTimeout(2000);
+        await page.screenshot({
+            path: 'Screenshot/NPayFail1.png', fullPage: false
+        });
+        throw  Error("1차 포인트 적립을 실패하였습니다!" + e);
+    }
 
     try {
         const autoWork = schedule.scheduleJob('02 00 10 * * *', () => { // 오전 8시 이벤트
@@ -57,7 +145,6 @@ if (!config.id || !config.pw) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
-
     async function Job() {
 
         const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
@@ -67,16 +154,12 @@ if (!config.id || !config.pw) {
 
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
-            // await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[1]/div[1]/input");
-            // await page.type("#id", config.id);
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
             await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
                 document.querySelector('#id').value = id;
                 document.querySelector('#pw').value = pw;
             }, config.id, config.pw);
 
-            // await page.$x("/html/body/div[1]/div[2]/div/div[1]/form/ul/li/div/div[1]/div[2]/input");
-            // await page.type("#pw", config.pw);
             await page.click("#keep"); //로그인 상태 유지 버튼
         } catch (e) {
             throw Error("id, pw를 입력하지 못했습니다. 오류를 확인해 주십시오: " + e);
