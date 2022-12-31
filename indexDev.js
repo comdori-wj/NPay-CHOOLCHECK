@@ -17,7 +17,6 @@
  * 2022/12/28        wj       프로그램(프로젝트) 이름 변경, 성공 및 실패 메시지 추가
  * 2022/12/30        wj       코드 정리 1차 및 프로그램 알고리즘 개선 작업1
  * 2023/01/01        wj       배포용, 개발용(indexDev) 분리후 배포용 일부 수정 및 개발용 코드 개발
- * 2023/01/02        wj       개발용-1.0.8 배포
  */
 
 import puppeteer from 'puppeteer'; //
@@ -47,8 +46,9 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
+
     try {
-        const autoWork = schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+        const autoWork = schedule.scheduleJob('40 26 08 * * *', () => { // 매일 오전 10시 프로그램 작동
             console.log("오전 10시! 네이버 페이 자동 출첵이 시작되었습니다.");
             Job(); // 자동화
         })
@@ -131,6 +131,7 @@ if (!config.id || !config.pw) {
                 });
                 // return;
             }
+
 
             let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
             const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");

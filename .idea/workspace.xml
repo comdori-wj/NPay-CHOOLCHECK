@@ -47,6 +47,11 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="RunManager" selected="Docker.n">
     <configuration name="Docker" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
       <deployment type="dockerfile">
@@ -114,7 +119,9 @@
       <workItem from="1672118276010" duration="4464000" />
       <workItem from="1672197882689" duration="1970000" />
       <workItem from="1672321208955" duration="6069000" />
-      <workItem from="1672333200141" duration="1689000" />
+      <workItem from="1672333200141" duration="3248000" />
+      <workItem from="1672525193900" duration="2302000" />
+      <workItem from="1672527516403" duration="6067000" />
     </task>
     <servers />
   </component>

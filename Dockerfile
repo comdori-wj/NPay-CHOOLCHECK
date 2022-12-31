@@ -1,6 +1,6 @@
 # Author : WJ
 # Revision Date : 2022/12/23
-# Modified Date : 2022/12/30
+# Modified Date : 2023/01/02
 
 # Reference 참고
 # https://thumbsu.tistory.com/14 yarn 명령어 사용법
@@ -30,12 +30,8 @@ COPY package-lock.json ./
 COPY index.js ./
 COPY config.js ./
 
-#ADD package.json yarn.lock ./
-
 RUN apk update
 RUN apk upgrade
-
-#RUN npm install
 
 RUN apk add --no-cache \
       chromium \
@@ -66,3 +62,7 @@ RUN npm install --unsafe-perm
 # 인자값을 지정하지 않을시 node app.js를 실행
 CMD [ "npm", "start" ]
 
+# 빌드 및 tar파일 생성 방법
+# docker build -t npay-choolcheck:[버전] .
+# sudo docker commit -p [컨테이너ID] npay-choolcheck:[버전]
+# sudo docker save -o npay-choolcheck-[버전].tar npay-choolcheck:[버전]
