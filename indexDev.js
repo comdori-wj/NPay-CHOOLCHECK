@@ -17,6 +17,7 @@
  * 2022/12/28        wj       프로그램(프로젝트) 이름 변경, 성공 및 실패 메시지 추가
  * 2022/12/30        wj       코드 정리 1차 및 프로그램 알고리즘 개선 작업1
  * 2023/01/01        wj       배포용, 개발용(indexDev) 분리후 배포용 일부 수정 및 개발용 코드 개발
+ * 2023/01/02        wj       네이버 로그인 실패 처리 기능 구현
  */
 
 import puppeteer from 'puppeteer'; //
@@ -46,9 +47,8 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
-
     try {
-        const autoWork = schedule.scheduleJob('40 26 08 * * *', () => { // 매일 오전 10시 프로그램 작동
+        const autoWork = schedule.scheduleJob('05 02 02 * * *', () => { // 매일 오전 10시 프로그램 작동
             console.log("오전 10시! 네이버 페이 자동 출첵이 시작되었습니다.");
             Job(); // 자동화
         })
@@ -83,10 +83,26 @@ if (!config.id || !config.pw) {
             await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
             await page.click("#log\\.login");
             await page.waitForTimeout(5000); // 대기
-            await page.screenshot({
-                path: 'Screenshot/loginOk.png', fullPage: false
-            });
-            console.log("로그인을 성공하였습니다.");
+
+            ////////////////////네이버 로그인 실패처리////////////////////
+            let loginErrMsg = "\n" +"                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다."+
+                " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
+            const errMsg = await page.$("#err_common > div");
+            const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
+            if(errMsgText == loginErrMsg){
+                console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
+                await page.screenshot({
+                    path: 'Screenshot/loginFail.png', fullPage: false
+                });
+                return;
+            } else {
+                await page.screenshot({
+                    path: 'Screenshot/loginOk.png', fullPage: false
+                });
+
+                console.log("로그인을 성공하였습니다.");
+            }
+
         } catch (e) {
             await page.waitForTimeout(5000);
             await page.screenshot({
@@ -131,7 +147,6 @@ if (!config.id || !config.pw) {
                 });
                 // return;
             }
-
 
             let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
             const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");
@@ -215,4 +230,3 @@ if (!config.id || !config.pw) {
     }
 
 })();
-
