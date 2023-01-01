@@ -1,6 +1,6 @@
 # Author : WJ
 # Revision Date : 2022/12/23
-# Modified Date : 2023/01/02
+# Modified Date : 2023/01/01
 
 # Reference 참고
 # https://thumbsu.tistory.com/14 yarn 명령어 사용법
@@ -58,13 +58,6 @@ RUN apk --no-cache add tzdata && \
 
 # node module 설치
 RUN npm install --unsafe-perm
-#
-## 어플리케이션 폴더를 WORKDIR명령어로 지정 - 서버 가동용
-#WORKDIR /app
-#
-# Only copy the package.json file to work directory
-#COPY package.json package-lock.json ./
-#RUN npm install
 
 # 인자값을 지정하지 않을시 node app.js를 실행
 CMD [ "npm", "start" ]
