@@ -1,9 +1,9 @@
 /**
  Created by WebStorm IDEA.
  * projectName    : NPay-CHOOLCHECK(앤페이-출첵)
- * fileName       : index
+ * fileName       : indexDev
  * author         : wj
- * date           : 2022/12/15
+ * date           : 2023/01/01
  * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-attendanceCheck
  * ===========================================================
  * DATE              AUTHOR             NOTE
@@ -20,7 +20,7 @@
  * 2023/01/02        wj       네이버 로그인 실패 처리 기능 구현
  */
 
-import puppeteer from 'puppeteer'; //
+import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
 import config from './config.js'; // 설정 파일
 import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
 
@@ -48,7 +48,7 @@ if (!config.id || !config.pw) {
     }); // 화면 크기
 
     try {
-        const autoWork = schedule.scheduleJob('05 02 02 * * *', () => { // 매일 오전 10시 프로그램 작동
+        const autoWork = schedule.scheduleJob('35 18 05 * * *', () => { // 매일 오전 10시 프로그램 작동
             console.log("오전 10시! 네이버 페이 자동 출첵이 시작되었습니다.");
             Job(); // 자동화
         })
@@ -82,7 +82,7 @@ if (!config.id || !config.pw) {
         try { // 로그인 처리
             await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
             await page.click("#log\\.login");
-            await page.waitForTimeout(5000); // 대기
+            await page.waitForTimeout(3000); // 대기
 
             ////////////////////네이버 로그인 실패처리////////////////////
             let loginErrMsg = "\n" +"                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다."+
