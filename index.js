@@ -15,22 +15,23 @@
  * 2022/12/23        wj       3차 광고 추가
  * 2022/12/27        wj       지정된 시간에 자동 실행 구현
  * 2022/12/28        wj       프로그램(프로젝트) 이름 변경, 성공 및 실패 메시지 추가
- * 2022/12/30        wj       코드 정리 1차 및 프로그램 알고리즘 개선 작업1
+ * 2022/12/30        wj       코드 정리 및 프로그램 알고리즘 개선 작업1
  * 2023/01/01        wj       배포용, 개발용(indexDev) 분리후 배포용 일부 수정 및 개발용 코드 개발
- * 2023/01/01        wj       개발용-1.0.8 배포
- * 2023/01/02        wj       개발용-1.0.10 배포 : 네이버 로그인 실패 처리 기능 추가
+ * 2023/01/01        wj       개발용-1.0.8 적용
+ * 2023/01/02        wj       개발용-1.0.10 적용 : 네이버 로그인 실패 처리 기능 추가
+ * 2023/01/05        wj       개발용-1.0.11 적용 : 네이버 로그인 실패 처리 기능 버그 수정(로그인 완료후 튕김 문제 해결)
  */
 
-import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
-import config from './config.js'; // 설정 파일
-import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
+import config from "./config.js";
+import puppeteer from "puppeteer";
+import schedule from "node-schedule";
 
 if (!config.agree) {
     throw Error('config.js에서 동의를 해 주시기 바랍니다.');
 }
 
 if (!config.id || !config.pw) {
-    throw Error("ID, 비밀번호가 없습니다. 확인 후 다시 시도 해주십시오.");
+    throw Error("ID, 비밀번호가 없습니다. 확인 후 다시 시도 해주세요.");
 }
 
 (async () => {
@@ -48,21 +49,18 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
+
     try {
-        const autoWork = schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
-            console.log("오전 10시! 네이버 페이 자동 출첵이 시작되었습니다.");
+        let today = new Date();
+        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+            console.log("현재 시간: "+ today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             Job(); // 자동화
-        })
+        });
     } catch (e) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
     async function Job() {
-
-        const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
-        await page.setViewport({
-            width: 1280, height: 1024
-        }); // 화면 크기
 
         ////////////////////네이버 로그인////////////////////
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
@@ -80,36 +78,32 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/loginInputFail.png', fullPage: false
             });
         }
-        try { // 로그인 처리
-            await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
-            await page.click("#log\\.login");
-            await page.waitForTimeout(3000); // 대기
+        await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
+        await page.click("#log\\.login");
+        await page.waitForTimeout(1000); // 대기
 
-            ////////////////////네이버 로그인 실패처리////////////////////
+
+        ////////////////////네이버 로그인 실패처리////////////////////
+        try{
+            const errMsg = await page.$("#err_common > div");
             let loginErrMsg = "\n" +"                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다."+
                 " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
-            const errMsg = await page.$("#err_common > div");
             const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
-            if(errMsgText == loginErrMsg){
+
+            if(errMsgText == loginErrMsg) {
                 console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
                 await page.screenshot({
                     path: 'Screenshot/loginFail.png', fullPage: false
                 });
                 return;
-            } else {
-                await page.screenshot({
-                    path: 'Screenshot/loginOk.png', fullPage: false
-                });
-
-                console.log("로그인을 성공하였습니다.");
             }
 
         } catch (e) {
-            await page.waitForTimeout(5000);
             await page.screenshot({
-                path: 'Screenshot/loginFail.png', fullPage: false
+                path: 'Screenshot/loginOk.png', fullPage: false
             });
-            throw Error("로그인 하지 못했습니다. 계정을 확인해 주세요." + e);
+            console.log("로그인을 성공하였습니다.");
+            //return;
         }
 
         ////////////////////1차 광고////////////////////
@@ -227,6 +221,11 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/NPayFail3.png', fullPage: false
             });
             throw  Error("3차 포인트 받기 버튼 클릭 실패!" + e);
+        }
+        finally {
+            let today = new Date();
+
+            console.log(today.toLocaleDateString()+"의 네이버 페지 줍기를 완료하였습니다. 적립이 되었는지 실제로 확인 하십시오.");
         }
     }
 

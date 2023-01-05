@@ -13,6 +13,7 @@
  * 2023/01/02        wj       네이버 로그인 실패 처리 기능 구현
  * 2023/01/03        wj       네이버 로그인 실패 처리 버그 수정, 중복 코드 제거(브라우저 탭 열기)
  * 2023/01/04        wj       네이버 로그인 실패 처리 버그 마무리, 앱 시작 시간 및 완료 메시지 기능 추가
+ * 2023/01/05        wj       코드 정리
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -59,11 +60,6 @@ if (!config.id || !config.pw) {
 
     async function Job() {
 
-        // const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
-        // await page.setViewport({
-        //     width: 1280, height: 1024
-        // }); // 화면 크기
-
         ////////////////////네이버 로그인////////////////////
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
@@ -99,10 +95,6 @@ if (!config.id || !config.pw) {
                 });
                 return;
             }
-            // console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
-            // await page.screenshot({
-            //     path: 'Screenshot/loginFail.png', fullPage: false
-            // });
 
         } catch (e) {
             await page.screenshot({
@@ -231,7 +223,7 @@ if (!config.id || !config.pw) {
         finally {
             let today = new Date();
 
-            console.log(today.toLocaleDateString()+"의 네이버 페지 줍기를 완료하였습니다. 적립이 되었는지 실제로 확인 하십시오.");
+            console.log(today.toLocaleDateString()+"의 네이버 페이 줍기를 완료하였습니다. 적립이 되었는지 실제로 확인 하십시오.");
         }
     }
 
