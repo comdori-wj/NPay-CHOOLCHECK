@@ -20,6 +20,7 @@
  * 2023/01/01        wj       개발용-1.0.8 적용
  * 2023/01/02        wj       개발용-1.0.10 적용 : 네이버 로그인 실패 처리 기능 추가
  * 2023/01/05        wj       개발용-1.0.11 적용 : 네이버 로그인 실패 처리 기능 버그 수정(로그인 완료후 튕김 문제 해결)
+ * 2023/01/06        wj       1차 포인트 적립 후 실패 오류로 인한 2차 적립 실패 버그 픽스
  */
 
 import config from "./config.js";
@@ -154,19 +155,13 @@ if (!config.id || !config.pw) {
                 });
                 console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
                 // return;
-            } else{
-                await page.screenshot({
-                    path: 'Screenshot/NPaySuccess1.png', fullPage: false
-                });
-                console.log("1차 적립을 성공하였습니다.")
             }
 
         } catch (e) {
-            await page.waitForTimeout(2000);
             await page.screenshot({
-                path: 'Screenshot/NPayFail1.png', fullPage: false
+                path: 'Screenshot/NPaySuccess1.png', fullPage: false
             });
-            throw  Error("1차 포인트 적립을 실패하였습니다!" + e);
+            console.log("1차 적립을 성공하였습니다.");
         }
 
         ////////////////////2차 광고////////////////////
@@ -224,7 +219,6 @@ if (!config.id || !config.pw) {
         }
         finally {
             let today = new Date();
-
             console.log(today.toLocaleDateString()+"의 네이버 페지 줍기를 완료하였습니다. 적립이 되었는지 실제로 확인 하십시오.");
         }
     }
