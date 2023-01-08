@@ -15,6 +15,7 @@
  * 2023/01/04        wj       네이버 로그인 실패 처리 버그 마무리, 앱 시작 시간 및 완료 메시지 기능 추가
  * 2023/01/05        wj       코드 정리
  * 2023/01/07        wj       1, 2차 광고 알고리즘 수정, 일부 로그 메시지 수정
+ * 2023/01/08        wj       2차 광고 버그 수정(실제로 적립이 안되었는데 성공 메시지 출력)
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -51,9 +52,9 @@ if (!config.id || !config.pw) {
 
     try {
         let today = new Date();
-        schedule.scheduleJob('18 06 12 * * *', () => { // 매일 오전 10시 프로그램 작동
-        console.log("현재 시간: "+ today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-        Job(); // 자동화
+        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            Job(); // 자동화
         });
     } catch (e) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
@@ -62,6 +63,7 @@ if (!config.id || !config.pw) {
     async function Job() {
 
         ////////////////////네이버 로그인////////////////////
+
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
@@ -81,8 +83,8 @@ if (!config.id || !config.pw) {
         await page.click("#log\\.login");
         await page.waitForTimeout(1000); // 대기
 
-
         ////////////////////네이버 로그인 실패처리////////////////////
+
         try{
             const errMsg = await page.$("#err_common > div");
             let loginErrMsg = "\n" +"                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다."+
@@ -103,7 +105,6 @@ if (!config.id || !config.pw) {
             });
             console.log("로그인을 성공하였습니다.");
             // await ad1(); // 1차 광고 실행
-            //return;
         }
 
         ////////////////////1차 광고////////////////////
@@ -173,7 +174,6 @@ if (!config.id || !config.pw) {
 
         // }
 
-
         ////////////////////2차 광고////////////////////
         // async function ad2() {
             try {
@@ -190,47 +190,54 @@ if (!config.id || !config.pw) {
                 });
                 throw Error(errorMsg + e);
             }
-            try {
-                await page.waitForTimeout(5000);
+        try {
+            await page.waitForTimeout(5000);
 
-                let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
-                let completionBtn = "\n" + "                  참여 완료\n" + "              ";
-                const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
-                const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-                console.log("버튼상태: " + btnText);
+            let possibleBtn = "\n"+"                  참여하고 포인트받기\n"+"              ";
+            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+            const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+            console.log("버튼상태: "+btnText);
 
-                if (btnText == possibleBtn) {
-                    console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
-                    await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
-                    await page.waitForTimeout(3000);
-                } else if (btnText == completionBtn) {
-                    console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 3차 광고 적립을 진행합니다.");
-                    await page.screenshot({
-                        path: 'Screenshot/NPayResult2.png', fullPage: false
-                    });
-                    // return;
-                }
+            if(btnText == possibleBtn){
+                console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
+                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+                await page.waitForTimeout(3000);
 
-                let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-                const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
-                const modalText = await page.evaluate(modal => modal.textContent, modal);
-                console.log("알림창 내용: " + modalText);
-
-                if (modalText == endAd) {
-                    await page.screenshot({
-                        path: 'Screenshot/NPayEnd2.png', fullPage: false
-                    });
-                    console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-                    // return;
-                }
-            } catch (e) {
-                await page.screenshot({
-                    path: 'Screenshot/NPaySuccess2.png', fullPage: false
-                });
-                console.log("2차 적립을 성공하였습니다.");
             }
-        // }
 
+            let completionBtn = "\n"+"                  참여 완료\n" +"              ";
+            if(btnText == completionBtn){
+                console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 3차 광고 적립을 진행합니다.");
+                await page.screenshot({
+                    path: 'Screenshot/NPayResult2.png', fullPage: false
+                });
+                await page.waitForTimeout(1000);
+                // await ad2(); // 2차 광고 실행
+                // return;
+            }
+
+            let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+            const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: "+modalText);
+
+            if(modalText == endAd){
+                await page.screenshot({
+                    path: 'Screenshot/NPayEnd2.png', fullPage: false
+                });
+                console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+                // return;
+            }
+
+        } catch (e) {
+            await page.screenshot({
+                path: 'Screenshot/NPaySuccess2.png', fullPage: false
+            });
+            console.log("2차 적립을 성공하였습니다.");
+
+            // await ad2(); // 2차 광고 실행
+        }
+        // }
 
         ////////////////////3차 광고////////////////////
 
