@@ -16,6 +16,7 @@
  * 2023/01/05        wj       코드 정리
  * 2023/01/07        wj       1, 2차 광고 알고리즘 수정, 일부 로그 메시지 수정
  * 2023/01/08        wj       2차 광고 버그 수정(실제로 적립이 안되었는데 성공 메시지 출력)
+ * 2023/01/10        wj       3차 광고 알고리즘 전면 수정, 코드 정리
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -52,7 +53,7 @@ if (!config.id || !config.pw) {
 
     try {
         let today = new Date();
-        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+        schedule.scheduleJob('48 01 04 * * *', () => { // 매일 오전 10시 프로그램 작동
             console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             Job(); // 자동화
         });
@@ -85,13 +86,12 @@ if (!config.id || !config.pw) {
 
         ////////////////////네이버 로그인 실패처리////////////////////
 
-        try{
+        try {
             const errMsg = await page.$("#err_common > div");
-            let loginErrMsg = "\n" +"                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다."+
-                " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
+            let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
             const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
 
-            if(errMsgText == loginErrMsg) {
+            if (errMsgText == loginErrMsg) {
                 console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
                 await page.screenshot({
                     path: 'Screenshot/loginFail.png', fullPage: false
@@ -108,125 +108,110 @@ if (!config.id || !config.pw) {
         }
 
         ////////////////////1차 광고////////////////////
-        // async function ad1() {
-
-            try {
-                await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
-                await page.waitForTimeout(2000);
+        try {
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
+            await page.waitForTimeout(2000);
+            await page.screenshot({
+                path: 'Screenshot/NPay1.png', fullPage: false
+            });
+            console.log("1차 광고 페이지 접속에 성공하였습니다.")
+        } catch (e) {
+            let errorMsg = "1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayFailAccess1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+        try {
+            await page.waitForTimeout(5000);
+            let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
+            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+            const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+            console.log("버튼상태: " + btnText);
+            if (btnText == possibleBtn) {
+                console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
+                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+                await page.waitForTimeout(3000);
                 await page.screenshot({
-                    path: 'Screenshot/NPay1.png', fullPage: false
+                    path: 'Screenshot/NPaySuccess1.png', fullPage: false
                 });
-                console.log("1차 광고 페이지 접속에 성공하였습니다.")
-            } catch (e) {
-                let errorMsg = "1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-                await page.screenshot({
-                    path: 'Screenshot/NPayFailAccess1.png', fullPage: false
-                });
-                throw Error(errorMsg + e);
-            }
-            try {
-                await page.waitForTimeout(5000);
-
-                let possibleBtn = "\n"+"                  참여하고 포인트받기\n"+"              ";
-                const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
-                const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-                console.log("버튼상태: "+btnText);
-
-                if(btnText == possibleBtn){
-                    console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
-                    await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
-                    await page.waitForTimeout(3000);
-                    await page.screenshot({
-                        path: 'Screenshot/NPaySuccess1.png', fullPage: false
-                    });
-                    console.log("1차 적립을 성공하였습니다.");
-                }
-
-                let completionBtn = "\n"+"                  참여 완료\n" +"              ";
-                if(btnText == completionBtn){
-                    console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 2차 광고 적립을 진행합니다.");
-                    await page.screenshot({
-                        path: 'Screenshot/NPayResult1.png', fullPage: false
-                    });
-                    await page.waitForTimeout(1000);
-                    // await ad2(); // 2차 광고 실행
-
-                    // return;
-                }
-
-                let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-                const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");
-                const modalText = await page.evaluate(modal => modal.textContent, modal);
-                console.log("알림창 내용: "+modalText);
-
-                if(modalText == endAd){
-                    await page.screenshot({
-                        path: 'Screenshot/NPayEnd1.png', fullPage: false
-                    });
-                    console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-                    // return;
-                }
-
-            } catch (e) {
-
-                // await ad2(); // 2차 광고 실행
+                console.log("1차 적립을 성공하였습니다.");
             }
 
-        // }
+            let completionBtn = "\n" + "                  참여 완료\n" + "              ";
+            if (btnText == completionBtn) {
+                console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 2차 광고 적립을 진행합니다.");
+                await page.screenshot({
+                    path: 'Screenshot/NPayResult1.png', fullPage: false
+                });
+                await page.waitForTimeout(1000);
+            }
+
+            let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEnd1.png', fullPage: false
+                });
+                console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+            }
+
+        } catch (e) {
+
+        }
 
         ////////////////////2차 광고////////////////////
-        // async function ad2() {
-            try {
-                await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
-                await page.waitForTimeout(2000);
-                await page.screenshot({
-                    path: 'Screenshot/NPay2.png', fullPage: false
-                });
-                console.log("2차 광고 페이지 접속에 성공하였습니다.")
-            } catch (e) {
-                let errorMsg = "2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-                await page.screenshot({
-                    path: 'Screenshot/NPayFailAccess2.png', fullPage: false
-                });
-                throw Error(errorMsg + e);
-            }
+        try {
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
+            await page.waitForTimeout(2000);
+            await page.screenshot({
+                path: 'Screenshot/NPay2.png', fullPage: false
+            });
+            console.log("2차 광고 페이지 접속에 성공하였습니다.")
+        } catch (e) {
+            let errorMsg = "2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayFailAccess2.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
         try {
             await page.waitForTimeout(5000);
 
-            let possibleBtn = "\n"+"                  참여하고 포인트받기\n"+"              ";
+            let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
             const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
             const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-            console.log("버튼상태: "+btnText);
+            console.log("버튼상태: " + btnText);
 
-            if(btnText == possibleBtn){
+            if (btnText == possibleBtn) {
                 console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
                 await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
                 await page.waitForTimeout(3000);
 
             }
 
-            let completionBtn = "\n"+"                  참여 완료\n" +"              ";
-            if(btnText == completionBtn){
+            let completionBtn = "\n" + "                  참여 완료\n" + "              ";
+            if (btnText == completionBtn) {
                 console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 3차 광고 적립을 진행합니다.");
                 await page.screenshot({
                     path: 'Screenshot/NPayResult2.png', fullPage: false
                 });
                 await page.waitForTimeout(1000);
-                // await ad2(); // 2차 광고 실행
-                // return;
             }
 
             let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-            const modal =await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
             const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: "+modalText);
+            console.log("알림창 내용: " + modalText);
 
-            if(modalText == endAd){
+            if (modalText == endAd) {
                 await page.screenshot({
                     path: 'Screenshot/NPayEnd2.png', fullPage: false
                 });
                 console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-                // return;
             }
 
         } catch (e) {
@@ -234,41 +219,69 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/NPaySuccess2.png', fullPage: false
             });
             console.log("2차 적립을 성공하였습니다.");
-
-            // await ad2(); // 2차 광고 실행
         }
-        // }
 
         ////////////////////3차 광고////////////////////
 
         try {
-            await page.waitForTimeout(2000);
             await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립
+            await page.waitForTimeout(2000);
+            await page.screenshot({
+                path: 'Screenshot/NPay3.png', fullPage: false
+            });
             console.log("3차 광고 페이지 접속에 성공하였습니다.")
-
         } catch (e) {
             let errorMsg = "3차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayFailAccess3.png', fullPage: false
+            });
             throw Error(errorMsg + e);
         }
         try {
-            await page.waitForTimeout(7000);
-            await page.click("#app > div:nth-child(2) > div > div > div > button");
-            await page.waitForTimeout(3000);
-            await page.screenshot({
-                path: 'Screenshot/NPayResult3.png', fullPage: false
-            });
-            console.log("3차 적립을 성공하였습니다.")
+            await page.waitForTimeout(5000);
+
+            let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
+            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+            const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+            console.log("버튼상태: " + btnText);
+
+            if (btnText == possibleBtn) {
+                console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
+                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+                await page.waitForTimeout(3000);
+
+            }
+
+            let completionBtn = "\n" + "                  참여 완료\n" + "              ";
+            if (btnText == completionBtn) {
+                console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n");
+                await page.screenshot({
+                    path: 'Screenshot/NPayResult3.png', fullPage: false
+                });
+                await page.waitForTimeout(1000);
+            }
+
+            let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEnd3.png', fullPage: false
+                });
+                console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+                // return;
+            }
 
         } catch (e) {
-            await page.waitForTimeout(2000);
             await page.screenshot({
-                path: 'Screenshot/NPayFail3.png', fullPage: false
+                path: 'Screenshot/NPaySuccess3.png', fullPage: false
             });
-            throw  Error("3차 포인트 받기 버튼 클릭 실패!" + e);
-        }
-        finally {
+            console.log("3차 적립을 성공하였습니다.");
+        } finally {
             let today = new Date();
-            console.log("네이버 페이 포인트 줍기를 완료하였습니다.\n적립이 되었는지 실제로 확인 하십시오.\n완료 시각: "+today.toLocaleString());
+            console.log("네이버 페이 포인트 줍기를 완료하였습니다.\n적립이 되었는지 실제로 확인 하십시오.\n완료 시각: " + today.toLocaleString());
         }
     }
 
