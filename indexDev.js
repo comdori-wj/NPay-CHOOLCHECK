@@ -17,6 +17,7 @@
  * 2023/01/07        wj       1, 2차 광고 알고리즘 수정, 일부 로그 메시지 수정
  * 2023/01/08        wj       2차 광고 버그 수정(실제로 적립이 안되었는데 성공 메시지 출력)
  * 2023/01/10        wj       3차 광고 알고리즘 전면 수정, 코드 정리
+ * 2023/01/11        wj       도커 환경변수에서 앱 사용동의 약관, 네이버 아이디&비밀번호를 입력하는 방식의 새로운 기능 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -24,8 +25,10 @@
  */
 
 import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
-import config from './config.js'; // 설정 파일
+// import config from './config.js'; // 설정 파일
 import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
+
+import config from './configDev.js'; //도커 환경변수 추가 설정 파일
 
 if (!config.agree) {
     throw Error('config.js에서 동의를 해 주시기 바랍니다.');
@@ -50,16 +53,17 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
+    await Job();
 
-    try {
-        let today = new Date();
-        schedule.scheduleJob('48 01 04 * * *', () => { // 매일 오전 10시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-            Job(); // 자동화
-        });
-    } catch (e) {
-        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    }
+    // try {
+    //     let today = new Date();
+    //     schedule.scheduleJob('25 43 21 * * *', () => { // 매일 오전 10시 프로그램 작동
+    //         console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+    //         Job(); // 자동화
+    //     });
+    // } catch (e) {
+    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    // }
 
     async function Job() {
 
@@ -68,6 +72,9 @@ if (!config.id || !config.pw) {
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
+            await page.select("#locale_switch", "ko_KR"); // 크로미움 브라우저가 기본값 영어로 되있음, 언어 한국어로 변경
+            await page.waitForTimeout(2000); // 로그인 페이지 로딩 대기
+
             await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
                 document.querySelector('#id').value = id;
                 document.querySelector('#pw').value = pw;
@@ -80,13 +87,15 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/loginInputFail.png', fullPage: false
             });
         }
+
+        ////////////////////네이버 로그인 실패처리////////////////////
+
         await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
         await page.click("#log\\.login");
         await page.waitForTimeout(1000); // 대기
 
-        ////////////////////네이버 로그인 실패처리////////////////////
-
         try {
+
             const errMsg = await page.$("#err_common > div");
             let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
             const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
