@@ -18,6 +18,7 @@
  * 2023/01/08        wj       2차 광고 버그 수정(실제로 적립이 안되었는데 성공 메시지 출력)
  * 2023/01/10        wj       3차 광고 알고리즘 전면 수정, 코드 정리
  * 2023/01/11        wj       도커 환경변수에서 앱 사용동의 약관, 네이버 아이디&비밀번호를 입력하는 방식의 새로운 기능 추가
+ * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 자정 초기화 광고 1개 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -25,10 +26,10 @@
  */
 
 import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
-// import config from './config.js'; // 설정 파일
+import config from './config.js'; // 설정 파일
 import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
 
-import config from './configDev.js'; //도커 환경변수 추가 설정 파일
+// import config from './configDev.js'; //도커 환경변수 추가 설정 파일
 
 if (!config.agree) {
     throw Error('config.js에서 동의를 해 주시기 바랍니다.');
@@ -96,27 +97,116 @@ if (!config.id || !config.pw) {
 
         try {
 
-            const errMsg = await page.$("#err_common > div");
-            let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
-            const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
+            try {
+                let loginAuthTitle = "2단계 인증 알림 발송 완료"
+                const loginAuthMsg = await page.$("#push_title");
+                const loginAuth = await page.evaluate(loginAuthMsg => loginAuthMsg.textContent, loginAuthMsg);
+                await page.screenshot({path: 'Screenshot/loginAuth.png', fullPage: false});
 
-            if (errMsgText == loginErrMsg) {
-                console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
-                await page.screenshot({
-                    path: 'Screenshot/loginFail.png', fullPage: false
-                });
-                return;
+                // return;
+                if (loginAuthTitle == loginAuth) {
+                    await page.click("#resendBtn");
+                    console.log("휴대폰에서 네이버앱 로그인 인증을 빠르게 하세요.");
+                    await page.waitForTimeout(8000);
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+                // console.log("로그인을 성공하였습니다.");
             }
 
-        } catch (e) {
+            try {
+
+                let loginOtpTitle = "OTP 인증번호를 입력해 주세요."
+                const loginOtpMsg = await page.$("#otp_title");
+                const loginOtp = await page.evaluate(loginOtpMsg => loginOtpMsg.textContent, loginOtpMsg);
+                await page.screenshot({path: 'Screenshot/loginOtp.png', fullPage: false});
+                if (loginOtpTitle == loginOtp) {
+                    console.log("OTP 로그인이 감지되었습니다.\n휴대폰에서 네이버앱 로그인 2단계 인증을 해지후 도커앱을 다시 시작 하세요.");
+                    return;
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+            }
+
+
+            try {
+
+                const errMsg = await page.$("#err_common > div");
+                let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
+                const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
+
+                if (errMsgText == loginErrMsg) {
+                    console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
+                    await page.screenshot({
+                        path: 'Screenshot/loginFail.png', fullPage: false
+                    });
+                    return;
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+                // console.log("로그인을 성공하였습니다.");
+                // await ad1(); // 1차 광고 실행
+            }
             await page.screenshot({
                 path: 'Screenshot/loginOk.png', fullPage: false
             });
             console.log("로그인을 성공하였습니다.");
-            // await ad1(); // 1차 광고 실행
+        } catch (e) {
+
         }
 
-        ////////////////////1차 광고////////////////////
+        ////////////////////자정 초기화 1차 광고////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd1.png', fullPage: false
+                });
+                console.log("1차 온라인 폐지가 소진 되어 종료되었습니다. 2차 적립으로 진행합니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone1.png', fullPage: false
+                });
+                console.log("이미 1차 자정 온라인 폐지 줍기를 하셨습니다. 2차 적립으로 진행합니다.");
+            }
+
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight1.png', fullPage: false
+            });
+            console.log("자정 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(5000);
+        } catch (e) {
+            let errorMsg = "자정 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+
+
+
+        //////////////////// 1차 광고////////////////////
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
             await page.waitForTimeout(2000);
