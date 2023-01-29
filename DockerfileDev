@@ -1,6 +1,6 @@
 # Author : WJ
-# Revision Date : 2022/12/23
-# Modified Date : 2023/01/01
+# Revision Date : 2022/01/30
+# Modified Date : 2023/01/30
 
 # Reference 참고
 # https://thumbsu.tistory.com/14 yarn 명령어 사용법
@@ -9,6 +9,7 @@
 # https://magpienote.tistory.com/149 Docker로 express 개발 환경 구성하기
 # https://blog.naver.com/chandong83/221006388637 도커 이미지 tar만들기
 # https://www.leafcats.com/240 docker image를 tar 파일로 저장 (export / import / save / load)
+# https://lahuman.github.io/dockerfile_alpine_puppeteer/ [Dockerfile] node:Alpine에서 puppeteer 기동 & 한글 깨짐 처리
 
 FROM alpine
 #FROM node:alpine
@@ -27,11 +28,28 @@ WORKDIR /app
 # 내부 실행 파일 복사
 COPY package.json ./
 COPY package-lock.json ./
-COPY index.js ./
-COPY config.js ./
+#COPY index.js ./
+#COPY config.js ./
 
-RUN apk update
-RUN apk upgrade
+COPY indexDev.js ./
+COPY configDev.js ./
+
+# 한글 폰트 설치
+RUN apk add fontconfig
+RUN mkdir -p /usr/share/fonts
+RUN cd /usr/share/fonts
+RUN wget http://cdn.naver.com/naver/NanumFont/fontfiles/NanumFont_TTF_ALL.zip
+RUN unzip NanumFont_TTF_ALL.zip -d /usr/share/fonts/nanumfont
+RUN fc-cache -f -v
+
+#RUN unzip ./NanumFont_TTF_ALL.zip
+#RUN rm NanumFont_TTF_ALL.zip
+# font config 관련내용
+# font cache 내용 갱신.
+#RUN fc-cache -r
+
+# 앱 디렉토리로 다시 이동
+RUN cd /app
 
 RUN apk add --no-cache \
       chromium \
@@ -43,10 +61,18 @@ RUN apk add --no-cache \
       nodejs \
       npm
 
+RUN apk update
+RUN apk upgrade
+
 # npm install 시 Chromium 다운로드 제외 처리
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # chromium-browser 설치 위치를 환경 변수에 저장
 ENV CHROMIUM_PATH /usr/bin/chromium-browser
+
+# 사용자 정보 및 앱 사용 동의를 환경변수에 저장
+ENV AGREE false
+ENV ID 이 문장을 지우고 네이버 아이디를 입력하세요.
+ENV PW 이 문장을 지우고 네이버 비밀번호를 입력하세요.
 
 # 앱 디렉토리로 다시 이동
 RUN cd /app
@@ -55,6 +81,10 @@ RUN cd /app
 RUN apk --no-cache add tzdata && \
         cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
         echo "Asia/Seoul" > /etc/timezone
+
+# Set the lang
+ENV LANG=ko_KR.UTF-8 \
+    LANGUAGE=ko_KR.UTF-8
 
 # node module 설치
 RUN npm install --unsafe-perm
