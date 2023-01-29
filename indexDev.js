@@ -18,11 +18,13 @@
  * 2023/01/08        wj       2차 광고 버그 수정(실제로 적립이 안되었는데 성공 메시지 출력)
  * 2023/01/10        wj       3차 광고 알고리즘 전면 수정, 코드 정리
  * 2023/01/11        wj       도커 환경변수에서 앱 사용동의 약관, 네이버 아이디&비밀번호를 입력하는 방식의 새로운 기능 추가
- * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 자정 초기화 광고 1개 추가
+ * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 1차 자정 광고 추가
+ * 2023/01/30        wj       JOB함수 분리(로그인, 자정광고, 매일적립 광고), 콜백 함수 적용
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
  * [ 파이썬 ] 네이버 자동 로그인 후 클릭 이벤트 응모하기 : https://jeong-f.tistory.com/148
+ * [Javascript] 콜백 (Callback) 함수 사용 방법 : https://koonsland.tistory.com/159
  */
 
 import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
@@ -54,21 +56,23 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
-    await Job();
+    // await job();
+    // await login(job1);
 
-    // try {
-    //     let today = new Date();
-    //     schedule.scheduleJob('25 43 21 * * *', () => { // 매일 오전 10시 프로그램 작동
-    //         console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-    //         Job(); // 자동화
-    //     });
-    // } catch (e) {
-    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    // }
+    try {
+        let today = new Date();
+        schedule.scheduleJob('35 01 06 * * *', () => { // 매일 오전 12시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job1) // 네이버 로그인후 자정광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
 
-    async function Job() {
 
-        ////////////////////네이버 로그인////////////////////
+    //////////////////// 네이버 로그인 함수 ////////////////////
+    async function login(login){
+        //////////////////// 네이버 로그인 계정 입력 ////////////////////
 
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
@@ -89,11 +93,13 @@ if (!config.id || !config.pw) {
             });
         }
 
-        ////////////////////네이버 로그인 실패처리////////////////////
+        //////////////////// 네이버 로그인 ////////////////////
 
         await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
         await page.click("#log\\.login");
         await page.waitForTimeout(1000); // 대기
+
+        //////////////////// 네이버 로그인 실패처리 ////////////////////
 
         try {
 
@@ -134,7 +140,6 @@ if (!config.id || !config.pw) {
                 // });
             }
 
-
             try {
 
                 const errMsg = await page.$("#err_common > div");
@@ -164,7 +169,12 @@ if (!config.id || !config.pw) {
 
         }
 
-        ////////////////////자정 초기화 1차 광고////////////////////
+        login(); // Callback 적용
+    }
+
+    //////////////////// 자정 광고 함수 ////////////////////
+    async function job1() {
+        //////////////////// 1차 자정 광고 ////////////////////
         try {
             let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
             let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
@@ -189,12 +199,11 @@ if (!config.id || !config.pw) {
                 console.log("이미 1차 자정 온라인 폐지 줍기를 하셨습니다. 2차 적립으로 진행합니다.");
             }
 
-
             await page.screenshot({
                 path: 'Screenshot/NPayMidnight1.png', fullPage: false
             });
             console.log("자정 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
-            await page.waitForTimeout(5000);
+            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
         } catch (e) {
             let errorMsg = "자정 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
             await page.screenshot({
@@ -202,11 +211,11 @@ if (!config.id || !config.pw) {
             });
             throw Error(errorMsg + e);
         }
+    }
+    //////////////////// 매일적립 광고 함수 ////////////////////
+    async function job2() {
 
-
-
-
-        //////////////////// 1차 광고////////////////////
+        //////////////////// 1차 광고 ////////////////////
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
             await page.waitForTimeout(2000);
@@ -262,7 +271,7 @@ if (!config.id || !config.pw) {
 
         }
 
-        ////////////////////2차 광고////////////////////
+        //////////////////// 2차 광고 ////////////////////
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
             await page.waitForTimeout(2000);
@@ -320,7 +329,7 @@ if (!config.id || !config.pw) {
             console.log("2차 적립을 성공하였습니다.");
         }
 
-        ////////////////////3차 광고////////////////////
+        //////////////////// 3차 광고 ////////////////////
 
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립
