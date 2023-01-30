@@ -20,7 +20,7 @@
  * 2023/01/11        wj       도커 환경변수에서 앱 사용동의 약관, 네이버 아이디&비밀번호를 입력하는 방식의 새로운 기능 추가
  * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 1차 자정 광고 추가
  * 2023/01/30        wj       JOB함수 분리(로그인, 자정광고, 매일적립 광고), 콜백 함수 적용
- * 2023/01/31        wj       매일적립 광고 스케줄 추가
+ * 2023/01/31        wj       매일적립 광고 스케줄 추가, 2차 자정 광고 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -218,6 +218,44 @@ if (!config.id || !config.pw) {
             let errorMsg = "자정 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
             await page.screenshot({
                 path: 'Screenshot/NPayMidnightFailAccess1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+        //////////////////// 2차 자정 광고 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/298915'); // 나이키 에어맥스 95
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd2.png', fullPage: false
+                });
+                console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
+                });
+                console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight2.png', fullPage: false
+            });
+            console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
             });
             throw Error(errorMsg + e);
         }
