@@ -27,7 +27,7 @@ const config = {
         launchOptions: {
             // defaultViewport: null,
             // devtools: true,
-            headless: false, // 브라우저 띄움
+            // headless: false, // 브라우저 띄움
             // slowMo: 500,
             executablePath: process.env.CHROMIUM_PATH,
             args: ['--no-sandbox']
