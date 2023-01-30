@@ -4,7 +4,7 @@
  * fileName       : indexDev
  * author         : wj
  * date           : 2023/01/01
- * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-attendanceCheck
+ * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-Online Ragpicker
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -20,6 +20,7 @@
  * 2023/01/11        wj       도커 환경변수에서 앱 사용동의 약관, 네이버 아이디&비밀번호를 입력하는 방식의 새로운 기능 추가
  * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 1차 자정 광고 추가
  * 2023/01/30        wj       JOB함수 분리(로그인, 자정광고, 매일적립 광고), 콜백 함수 적용
+ * 2023/01/31        wj       매일적립 광고 스케줄 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -61,7 +62,7 @@ if (!config.id || !config.pw) {
 
     try {
         let today = new Date();
-        schedule.scheduleJob('35 01 06 * * *', () => { // 매일 오전 12시 프로그램 작동
+        schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
             console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
             login(job1) // 네이버 로그인후 자정광고 함수 실행
         });
@@ -69,6 +70,15 @@ if (!config.id || !config.pw) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
+    try {
+        let today = new Date();
+        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job2) // 네이버 로그인후 자정광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
 
     //////////////////// 네이버 로그인 함수 ////////////////////
     async function login(login){
@@ -203,7 +213,7 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/NPayMidnight1.png', fullPage: false
             });
             console.log("자정 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
-            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
         } catch (e) {
             let errorMsg = "자정 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
             await page.screenshot({
@@ -211,7 +221,10 @@ if (!config.id || !config.pw) {
             });
             throw Error(errorMsg + e);
         }
+
     }
+
+
     //////////////////// 매일적립 광고 함수 ////////////////////
     async function job2() {
 
