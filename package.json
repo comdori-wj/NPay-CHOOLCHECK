@@ -10,6 +10,6 @@
   },
   "dependencies": {
     "node-schedule": "^2.1.0",
-    "puppeteer": "^19.4.0"
+    "puppeteer": "^19.6.2"
   }
 }

@@ -21,14 +21,16 @@
  * 2023/01/28        wj       네이버 로그인시 2단계 인증 요청 추가, 1차 자정 광고 추가
  * 2023/01/30        wj       JOB함수 분리(로그인, 자정광고, 매일적립 광고), 콜백 함수 적용
  * 2023/01/31        wj       매일적립 광고 스케줄 추가, 2차 자정 광고 추가
+ * 2023/02/01        wj       모바일모드 추가(3차 11시 광고는 모바일웹만 사용가능)
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
  * [ 파이썬 ] 네이버 자동 로그인 후 클릭 이벤트 응모하기 : https://jeong-f.tistory.com/148
  * [Javascript] 콜백 (Callback) 함수 사용 방법 : https://koonsland.tistory.com/159
+ * Page.emulate() 메서드 사용방법, KnownDevices variable : https://pptr.dev/api/puppeteer.knowndevices
  */
 
-import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
+import puppeteer, {KnownDevices} from 'puppeteer'; // 퍼펫티어 라이브러리, 모바일 에뮬레이터 라이브러리
 import config from './config.js'; // 설정 파일
 import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
 
@@ -53,9 +55,14 @@ if (!config.id || !config.pw) {
     console.log("네이버 페이 출첵 프로그램이 실행되었습니다.");
 
     const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
-    await page.setViewport({
-        width: 1280, height: 1024
-    }); // 화면 크기
+    const iPhone = KnownDevices['iPhone 13 Pro']; // 에뮬을 아이폰13프로 로 설정
+    await page.emulate(iPhone);
+
+    // await page.setViewport({
+    //     width: 1280, height: 1024
+    // }); // 화면 크기
+
+    await page.goto("https://naver.com"); // 모바일 웹 뜨는지 테스트
 
     // await job();
     // await login(job1);
@@ -87,7 +94,7 @@ if (!config.id || !config.pw) {
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
-            await page.select("#locale_switch", "ko_KR"); // 크로미움 브라우저가 기본값 영어로 되있음, 언어 한국어로 변경
+            await page.select("#locale_switch", "ko_KR"); // 크로미움 브라우저가 기본값 영어로 되어있음, 언어 한국어로 변경
             await page.waitForTimeout(2000); // 로그인 페이지 로딩 대기
 
             await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
