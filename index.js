@@ -4,7 +4,7 @@
  * fileName       : index
  * author         : wj
  * date           : 2022/12/15
- * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-attendanceCheck
+ * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-Online Ragpicker
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -23,6 +23,7 @@
  * 2023/01/06        wj       1차 포인트 적립 후 실패 오류로 인한 2차 적립 실패 버그 픽스
  * 2023/01/09        wj       도커 이미지 1.0.13 빌드 : 개발용 코드 적용
  * 2023/01/10        wj       도커 이미지 1.0.14 빌드 : 개발용 코드 적용
+ * 2023/02/01        wj       도커 이미지 1.0.15 빌드 : 개발용 코드 적용
  */
 
 import puppeteer from 'puppeteer'; // 퍼펫티어 라이브러리
@@ -52,24 +53,39 @@ if (!config.id || !config.pw) {
         width: 1280, height: 1024
     }); // 화면 크기
 
+    // await job();
+    // await login(job1);
 
     try {
         let today = new Date();
-        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-            Job(); // 자동화
+        schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job1) // 네이버 로그인후 자정광고 함수 실행
         });
     } catch (e) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
-    async function Job() {
+    try {
+        let today = new Date();
+        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job2) // 네이버 로그인후 자정광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
 
-        ////////////////////네이버 로그인////////////////////
+    //////////////////// 네이버 로그인 함수 ////////////////////
+    async function login(login){
+        //////////////////// 네이버 로그인 계정 입력 ////////////////////
 
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
+            await page.select("#locale_switch", "ko_KR"); // 크로미움 브라우저가 기본값 영어로 되있음, 언어 한국어로 변경
+            await page.waitForTimeout(2000); // 로그인 페이지 로딩 대기
+
             await page.evaluate((id, pw) => { // 아이디, 비밀번호 입력
                 document.querySelector('#id').value = id;
                 document.querySelector('#pw').value = pw;
@@ -82,34 +98,171 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/loginInputFail.png', fullPage: false
             });
         }
+
+        //////////////////// 네이버 로그인 ////////////////////
+
         await page.waitForTimeout(3000); // 로그인 처리 대기(봇 방지 처리)
         await page.click("#log\\.login");
         await page.waitForTimeout(1000); // 대기
 
-        ////////////////////네이버 로그인 실패처리////////////////////
+        //////////////////// 네이버 로그인 실패처리 ////////////////////
 
         try {
-            const errMsg = await page.$("#err_common > div");
-            let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
-            const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
 
-            if (errMsgText == loginErrMsg) {
-                console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
-                await page.screenshot({
-                    path: 'Screenshot/loginFail.png', fullPage: false
-                });
-                return;
+            try {
+                let loginAuthTitle = "2단계 인증 알림 발송 완료"
+                const loginAuthMsg = await page.$("#push_title");
+                const loginAuth = await page.evaluate(loginAuthMsg => loginAuthMsg.textContent, loginAuthMsg);
+                await page.screenshot({path: 'Screenshot/loginAuth.png', fullPage: false});
+
+                // return;
+                if (loginAuthTitle == loginAuth) {
+                    await page.click("#resendBtn");
+                    console.log("휴대폰에서 네이버앱 로그인 인증을 빠르게 하세요.");
+                    await page.waitForTimeout(8000);
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+                // console.log("로그인을 성공하였습니다.");
             }
 
-        } catch (e) {
+            try {
+
+                let loginOtpTitle = "OTP 인증번호를 입력해 주세요."
+                const loginOtpMsg = await page.$("#otp_title");
+                const loginOtp = await page.evaluate(loginOtpMsg => loginOtpMsg.textContent, loginOtpMsg);
+                await page.screenshot({path: 'Screenshot/loginOtp.png', fullPage: false});
+                if (loginOtpTitle == loginOtp) {
+                    console.log("OTP 로그인이 감지되었습니다.\n휴대폰에서 네이버앱 로그인 2단계 인증을 해지후 도커앱을 다시 시작 하세요.");
+                    return;
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+            }
+
+            try {
+
+                const errMsg = await page.$("#err_common > div");
+                let loginErrMsg = "\n" + "                                        아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다." + " 입력하신 내용을 다시 확인해주세요.\n" + "                                    ";
+                const errMsgText = await page.evaluate(errMsg => errMsg.textContent, errMsg);
+
+                if (errMsgText == loginErrMsg) {
+                    console.log("아이디 또는 비밀번호가 맞지 않습니다. 다시 확인후 시도해주십시오.");
+                    await page.screenshot({
+                        path: 'Screenshot/loginFail.png', fullPage: false
+                    });
+                    return;
+                }
+
+            } catch (e) {
+                // await page.screenshot({
+                //     path: 'Screenshot/loginOk.png', fullPage: false
+                // });
+                // console.log("로그인을 성공하였습니다.");
+                // await ad1(); // 1차 광고 실행
+            }
             await page.screenshot({
                 path: 'Screenshot/loginOk.png', fullPage: false
             });
             console.log("로그인을 성공하였습니다.");
-            // await ad1(); // 1차 광고 실행
+        } catch (e) {
+
         }
 
-        ////////////////////1차 광고////////////////////
+        login(); // Callback 적용
+    }
+
+    //////////////////// 자정 광고 함수 ////////////////////
+    async function job1() {
+        //////////////////// 1차 자정 광고 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd1.png', fullPage: false
+                });
+                console.log("1차 온라인 폐지가 소진 되어 종료되었습니다. 2차 적립으로 진행합니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone1.png', fullPage: false
+                });
+                console.log("이미 1차 자정 온라인 폐지 줍기를 하셨습니다. 2차 적립으로 진행합니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight1.png', fullPage: false
+            });
+            console.log("자정 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "자정 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+        //////////////////// 2차 자정 광고 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/298915'); // 나이키 에어맥스 95
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd2.png', fullPage: false
+                });
+                console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
+                });
+                console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight2.png', fullPage: false
+            });
+            console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+    }
+
+
+    //////////////////// 매일적립 광고 함수 ////////////////////
+    async function job2() {
+
+        //////////////////// 1차 광고 ////////////////////
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/55162'); // 오전 8시 마이스토어
             await page.waitForTimeout(2000);
@@ -165,7 +318,7 @@ if (!config.id || !config.pw) {
 
         }
 
-        ////////////////////2차 광고////////////////////
+        //////////////////// 2차 광고 ////////////////////
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
             await page.waitForTimeout(2000);
@@ -223,7 +376,7 @@ if (!config.id || !config.pw) {
             console.log("2차 적립을 성공하였습니다.");
         }
 
-        ////////////////////3차 광고////////////////////
+        //////////////////// 3차 광고 ////////////////////
 
         try {
             await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립

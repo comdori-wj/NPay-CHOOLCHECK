@@ -44,6 +44,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;fileTemplates&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Applications/WebStorm.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -139,7 +140,9 @@
       <workItem from="1674839017060" duration="11248000" />
       <workItem from="1675021732363" duration="4142000" />
       <workItem from="1675026001578" duration="3999000" />
-      <workItem from="1675099585322" duration="1447000" />
+      <workItem from="1675099585322" duration="2175000" />
+      <workItem from="1675181205309" duration="1659000" />
+      <workItem from="1675182930374" duration="711000" />
     </task>
     <servers />
   </component>
