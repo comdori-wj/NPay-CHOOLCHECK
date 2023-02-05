@@ -1,10 +1,10 @@
 /**
  Created by WebStorm IDEA.
  * projectName    : NPay-CHOOLCHECK(앤페이-출첵)
- * fileName       : indexDev
+ * fileName       : appDev
  * author         : wj
  * date           : 2023/01/01
- * description    : 네이버 페이 자동 출석 프로그램 - NaverPay-Online Ragpicker
+ * description    : 네이버 페이 포인트 자동 줍기 출석 앱 - NaverPay-Online Ragpicker
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -22,6 +22,7 @@
  * 2023/01/30        wj       JOB함수 분리(로그인, 자정광고, 매일적립 광고), 콜백 함수 적용
  * 2023/01/31        wj       매일적립 광고 스케줄 추가, 2차 자정 광고 추가
  * 2023/02/01        wj       모바일모드 추가(3차 11시 광고는 모바일웹만 사용가능)
+ * 2023/02/06        wj       실행파일 appDev.js로 변경, 3차 자정 광고 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -266,6 +267,45 @@ if (!config.id || !config.pw) {
             });
             throw Error(errorMsg + e);
         }
+
+        //////////////////// 3차 자정 광고 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/343265'); // 나이키 플래시 세일
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd2.png', fullPage: false
+                });
+                console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
+                });
+                console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight2.png', fullPage: false
+            });
+            console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
 
     }
 
