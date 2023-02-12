@@ -24,6 +24,7 @@
  * 2023/02/01        wj       모바일모드 추가(3차 11시 광고는 모바일웹만 사용가능)
  * 2023/02/06        wj       실행파일 appDev.js로 변경, 3차 자정 광고 추가
  * 2023/02/13        wj       1차, 2차(광고 종료로 인한 비활성화), 3차 매일적립 광고 모바일 페이지에 맞게 코드 수정
+ * 2023/02/13        wj       오전 12시, 8시, 9시, 10시 시간대별 광고 추가
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -66,28 +67,53 @@ if (!config.id || !config.pw) {
 
     // await page.goto("https://naver.com"); // 모바일 웹 뜨는지 테스트
 
-    // await login(job1);
-    await login(job2);
+    // await login(job1_1);
+    // await login(job1_2);
+    // await login(job1_3);
 
-    // try {
-    //     let today = new Date();
-    //     schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
-    //         console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
-    //         login(job1) // 네이버 로그인후 자정광고 함수 실행
-    //     });
-    // } catch (e) {
-    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    // }
-    //
-    // try {
-    //     let today = new Date();
-    //     schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
-    //         console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-    //         login(job2) // 네이버 로그인후 자정광고 함수 실행
-    //     });
-    // } catch (e) {
-    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    // }
+
+    // await login(job2);
+
+    try {
+        let today = new Date();
+        schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job1_1) // 네이버 로그인후 자정광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
+
+    try {
+        let today = new Date();
+        schedule.scheduleJob('02 00 08 * * *', () => { // 매일 오전 08시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job1_2) // 네이버 로그인후 8시 광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
+
+    try {
+        let today = new Date();
+        schedule.scheduleJob('02 00 09 * * *', () => { // 매일 오전 09시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job1_3) // 네이버 로그인후 9시 광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
+
+
+    try {
+        let today = new Date();
+        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            login(job2) // 네이버 로그인후 10시 광고 함수 실행
+        });
+    } catch (e) {
+        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    }
 
     //////////////////// 네이버 로그인 함수 ////////////////////
     async function login(login){
@@ -192,13 +218,15 @@ if (!config.id || !config.pw) {
     }
 
     //////////////////// 자정 광고 함수 ////////////////////
-    async function job1() {
+    async function job1_1() {
         //////////////////// 1차 자정 광고 ////////////////////
         try {
             let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
             let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
 
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
+            // await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/343265'); // 나이키 인기 신발
+
             await page.waitForTimeout(1000); // 접속 대기
 
             const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
@@ -230,84 +258,209 @@ if (!config.id || !config.pw) {
             });
             throw Error(errorMsg + e);
         }
-
-        //////////////////// 2차 자정 광고 ////////////////////
-        try {
-            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
-            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
-
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/298915'); // 나이키 에어맥스 95
-            await page.waitForTimeout(1000); // 접속 대기
-
-            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
-            const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: " + modalText);
-
-            if (modalText == endAd) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEndAd2.png', fullPage: false
-                });
-                console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
-            }
-            if (modalText == alreadyDone) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
-                });
-                console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
-            }
-
-            await page.screenshot({
-                path: 'Screenshot/NPayMidnight2.png', fullPage: false
-            });
-            console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
-            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
-        } catch (e) {
-            let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-            await page.screenshot({
-                path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
-            });
-            throw Error(errorMsg + e);
-        }
-
-        //////////////////// 3차 자정 광고 ////////////////////
-        try {
-            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
-            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
-
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/343265'); // 나이키 플래시 세일
-            await page.waitForTimeout(1000); // 접속 대기
-
-            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
-            const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: " + modalText);
-
-            if (modalText == endAd) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEndAd2.png', fullPage: false
-                });
-                console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
-            }
-            if (modalText == alreadyDone) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
-                });
-                console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
-            }
-
-            await page.screenshot({
-                path: 'Screenshot/NPayMidnight2.png', fullPage: false
-            });
-            console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
-            await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
-        } catch (e) {
-            let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-            await page.screenshot({
-                path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
-            });
-            throw Error(errorMsg + e);
-        }
+        //
+        // //////////////////// 2차 자정 광고 ////////////////////
+        // try {
+        //     let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+        //     let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+        //
+        //     await page.goto('https://ofw.adison.co/u/naverpay/ads/298915'); // 나이키 에어맥스 95
+        //     await page.waitForTimeout(1000); // 접속 대기
+        //
+        //     const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+        //     const modalText = await page.evaluate(modal => modal.textContent, modal);
+        //     console.log("알림창 내용: " + modalText);
+        //
+        //     if (modalText == endAd) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayEndAd2.png', fullPage: false
+        //         });
+        //         console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
+        //     }
+        //     if (modalText == alreadyDone) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
+        //         });
+        //         console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
+        //     }
+        //
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayMidnight2.png', fullPage: false
+        //     });
+        //     console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+        //     await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+        // } catch (e) {
+        //     let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
+        //     });
+        //     throw Error(errorMsg + e);
+        // }
+        //
+        // //////////////////// 3차 자정 광고 ////////////////////
+        // try {
+        //     let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+        //     let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+        //
+        //     await page.goto('https://ofw.adison.co/u/naverpay/ads/343265'); // 나이키 플래시 세일
+        //     await page.waitForTimeout(1000); // 접속 대기
+        //
+        //     const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+        //     const modalText = await page.evaluate(modal => modal.textContent, modal);
+        //     console.log("알림창 내용: " + modalText);
+        //
+        //     if (modalText == endAd) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayEndAd2.png', fullPage: false
+        //         });
+        //         console.log("2차 온라인 폐지가 소진 되어 종료되었습니다.");
+        //     }
+        //     if (modalText == alreadyDone) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayAlreadyDone2.png', fullPage: false
+        //         });
+        //         console.log("이미 2차 자정 온라인 폐지 줍기를 하셨습니다.");
+        //     }
+        //
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayMidnight2.png', fullPage: false
+        //     });
+        //     console.log("자정 2차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+        //     await page.waitForTimeout(5000); // 2초후 페이지 이동 대기
+        // } catch (e) {
+        //     let errorMsg = "자정 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayMidnightFailAccess2.png', fullPage: false
+        //     });
+        //     throw Error(errorMsg + e);
+        // }
 
     }
+    async function job1_2() {
+        //////////////////// 8시 광고 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/348514'); // 갤럭시 온라인 체험존
+
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd1.png', fullPage: false
+                });
+                console.log("1차 온라인 폐지가 소진 되어 종료되었습니다. 2차 적립으로 진행합니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone1.png', fullPage: false
+                });
+                console.log("8시 이미 온라인 폐지 줍기를 하셨습니다. 2차 적립으로 진행합니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnight1.png', fullPage: false
+            });
+            console.log("8시 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "8시 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+    }
+
+    //////////////////// 9시 광고 함수 ////////////////////
+    async function job1_3() {
+        //////////////////// 9시 광고 1차 ////////////////////
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/230108'); // 웰컴 저축은행
+
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd09_1.png', fullPage: false
+                });
+                console.log("1차 온라인 폐지가 소진 되어 종료되었습니다. 2차 적립으로 진행합니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone09_1.png', fullPage: false
+                });
+                console.log("9시 1차 이미 온라인 폐지 줍기를 하셨습니다. 2차 적립으로 진행합니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPay09_1.png', fullPage: false
+            });
+            console.log("9시 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "9시 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess09_1.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+        //////////////////// 9시 광고 2차 ////////////////////
+
+        try {
+            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+
+            await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
+
+            await page.waitForTimeout(1000); // 접속 대기
+
+            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+            const modalText = await page.evaluate(modal => modal.textContent, modal);
+            console.log("알림창 내용: " + modalText);
+
+            if (modalText == endAd) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayEndAd09_2.png', fullPage: false
+                });
+                console.log("9시 2차 온라인 폐지가 소진 되어 종료되었습니다.");
+            }
+            if (modalText == alreadyDone) {
+                await page.screenshot({
+                    path: 'Screenshot/NPayAlreadyDone09_2.png', fullPage: false
+                });
+                console.log("9시 2차 이미 온라인 폐지 줍기를 하셨습니다.");
+            }
+
+            await page.screenshot({
+                path: 'Screenshot/NPay09_2.png', fullPage: false
+            });
+            console.log("9시 2차 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+        } catch (e) {
+            let errorMsg = "9시 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+            await page.screenshot({
+                path: 'Screenshot/NPayMidnightFailAccess09_2.png', fullPage: false
+            });
+            throw Error(errorMsg + e);
+        }
+
+
+    }
+
 
 
     //////////////////// 매일적립 광고 함수 ////////////////////
