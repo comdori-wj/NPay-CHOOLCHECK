@@ -23,6 +23,7 @@
  * 2023/01/31        wj       매일적립 광고 스케줄 추가, 2차 자정 광고 추가
  * 2023/02/01        wj       모바일모드 추가(3차 11시 광고는 모바일웹만 사용가능)
  * 2023/02/06        wj       실행파일 appDev.js로 변경, 3차 자정 광고 추가
+ * 2023/02/13        wj       1차 매일적립 광고 모바일 페이지에 맞게 코드 수정
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -67,26 +68,27 @@ if (!config.id || !config.pw) {
 
     // await job();
     // await login(job1);
+    await login(job2);
 
-    try {
-        let today = new Date();
-        schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
-            login(job1) // 네이버 로그인후 자정광고 함수 실행
-        });
-    } catch (e) {
-        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    }
-
-    try {
-        let today = new Date();
-        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-            login(job2) // 네이버 로그인후 자정광고 함수 실행
-        });
-    } catch (e) {
-        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    }
+    // try {
+    //     let today = new Date();
+    //     schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
+    //         console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
+    //         login(job1) // 네이버 로그인후 자정광고 함수 실행
+    //     });
+    // } catch (e) {
+    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    // }
+    //
+    // try {
+    //     let today = new Date();
+    //     schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+    //         console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+    //         login(job2) // 네이버 로그인후 자정광고 함수 실행
+    //     });
+    // } catch (e) {
+    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    // }
 
     //////////////////// 네이버 로그인 함수 ////////////////////
     async function login(login){
@@ -306,7 +308,6 @@ if (!config.id || !config.pw) {
             throw Error(errorMsg + e);
         }
 
-
     }
 
 
@@ -331,12 +332,13 @@ if (!config.id || !config.pw) {
         try {
             await page.waitForTimeout(5000);
             let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
-            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+            const callToActionBtn = await page.$("#app > div:nth-child(3) > div > div > div > button > span");
             const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-            console.log("버튼상태: " + btnText);
+            console.log("버튼상태:" + btnText);
             if (btnText == possibleBtn) {
                 console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
-                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+                await page.click("#app > div:nth-child(3) > div > div > div > button");
+                // await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
                 await page.waitForTimeout(3000);
                 await page.screenshot({
                     path: 'Screenshot/NPaySuccess1.png', fullPage: false
@@ -354,10 +356,10 @@ if (!config.id || !config.pw) {
             }
 
             let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+
+            const modal = await page.$("body > div.blocker.current > div > div:nth-child(1)");
             const modalText = await page.evaluate(modal => modal.textContent, modal);
             console.log("알림창 내용: " + modalText);
-
             if (modalText == endAd) {
                 await page.screenshot({
                     path: 'Screenshot/NPayEnd1.png', fullPage: false
@@ -369,123 +371,124 @@ if (!config.id || !config.pw) {
 
         }
 
-        //////////////////// 2차 광고 ////////////////////
-        try {
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
-            await page.waitForTimeout(2000);
-            await page.screenshot({
-                path: 'Screenshot/NPay2.png', fullPage: false
-            });
-            console.log("2차 광고 페이지 접속에 성공하였습니다.")
-        } catch (e) {
-            let errorMsg = "2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-            await page.screenshot({
-                path: 'Screenshot/NPayFailAccess2.png', fullPage: false
-            });
-            throw Error(errorMsg + e);
-        }
-        try {
-            await page.waitForTimeout(5000);
-
-            let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
-            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
-            const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-            console.log("버튼상태: " + btnText);
-
-            if (btnText == possibleBtn) {
-                console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
-                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
-                await page.waitForTimeout(3000);
-
-            }
-
-            let completionBtn = "\n" + "                  참여 완료\n" + "              ";
-            if (btnText == completionBtn) {
-                console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 3차 광고 적립을 진행합니다.");
-                await page.screenshot({
-                    path: 'Screenshot/NPayResult2.png', fullPage: false
-                });
-                await page.waitForTimeout(1000);
-            }
-
-            let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
-            const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: " + modalText);
-
-            if (modalText == endAd) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEnd2.png', fullPage: false
-                });
-                console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-            }
-
-        } catch (e) {
-            await page.screenshot({
-                path: 'Screenshot/NPaySuccess2.png', fullPage: false
-            });
-            console.log("2차 적립을 성공하였습니다.");
-        }
-
-        //////////////////// 3차 광고 ////////////////////
-
-        try {
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립
-            await page.waitForTimeout(2000);
-            await page.screenshot({
-                path: 'Screenshot/NPay3.png', fullPage: false
-            });
-            console.log("3차 광고 페이지 접속에 성공하였습니다.")
-        } catch (e) {
-            let errorMsg = "3차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-            await page.screenshot({
-                path: 'Screenshot/NPayFailAccess3.png', fullPage: false
-            });
-            throw Error(errorMsg + e);
-        }
-        try {
-            await page.waitForTimeout(5000);
-
-            let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
-            const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
-            const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
-            console.log("버튼상태: " + btnText);
-
-            if (btnText == possibleBtn) {
-                console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
-                await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
-                await page.waitForTimeout(3000);
-
-            }
-
-            let completionBtn = "\n" + "                  참여 완료\n" + "              ";
-            if (btnText == completionBtn) {
-                console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n");
-                await page.screenshot({
-                    path: 'Screenshot/NPayResult3.png', fullPage: false
-                });
-                await page.waitForTimeout(1000);
-            }
-
-            let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-            const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
-            const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: " + modalText);
-
-            if (modalText == endAd) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEnd3.png', fullPage: false
-                });
-                console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-                // return;
-            }
-
-        } catch (e) {
-            await page.screenshot({
-                path: 'Screenshot/NPaySuccess3.png', fullPage: false
-            });
-            console.log("3차 적립을 성공하였습니다.");
-        } finally {
+        // //////////////////// 2차 광고 ////////////////////
+        // try {
+        //     await page.goto('https://ofw.adison.co/u/naverpay/ads/72557'); // 오전 10시 현장결제
+        //     await page.waitForTimeout(2000);
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPay2.png', fullPage: false
+        //     });
+        //     console.log("2차 광고 페이지 접속에 성공하였습니다.")
+        // } catch (e) {
+        //     let errorMsg = "2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayFailAccess2.png', fullPage: false
+        //     });
+        //     throw Error(errorMsg + e);
+        // }
+        // try {
+        //     await page.waitForTimeout(5000);
+        //
+        //     let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
+        //     const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+        //     const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+        //     console.log("버튼상태: " + btnText);
+        //
+        //     if (btnText == possibleBtn) {
+        //         console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
+        //         await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+        //         await page.waitForTimeout(3000);
+        //
+        //     }
+        //
+        //     let completionBtn = "\n" + "                  참여 완료\n" + "              ";
+        //     if (btnText == completionBtn) {
+        //         console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n이어서 3차 광고 적립을 진행합니다.");
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayResult2.png', fullPage: false
+        //         });
+        //         await page.waitForTimeout(1000);
+        //     }
+        //
+        //     let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+        //     const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+        //     const modalText = await page.evaluate(modal => modal.textContent, modal);
+        //     console.log("알림창 내용: " + modalText);
+        //
+        //     if (modalText == endAd) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayEnd2.png', fullPage: false
+        //         });
+        //         console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+        //     }
+        //
+        // } catch (e) {
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPaySuccess2.png', fullPage: false
+        //     });
+        //     console.log("2차 적립을 성공하였습니다.");
+        // }
+        //
+        // //////////////////// 3차 광고 ////////////////////
+        //
+        // try {
+        //     await page.goto('https://ofw.adison.co/u/naverpay/ads/67823') // 오전 10시 즉시적립
+        //     await page.waitForTimeout(2000);
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPay3.png', fullPage: false
+        //     });
+        //     console.log("3차 광고 페이지 접속에 성공하였습니다.")
+        // } catch (e) {
+        //     let errorMsg = "3차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPayFailAccess3.png', fullPage: false
+        //     });
+        //     throw Error(errorMsg + e);
+        // }
+        // try {
+        //     await page.waitForTimeout(5000);
+        //
+        //     let possibleBtn = "\n" + "                  참여하고 포인트받기\n" + "              ";
+        //     const callToActionBtn = await page.$("#app > div:nth-child(2) > div > div > div > button > span");
+        //     const btnText = await page.evaluate(callToActionBtn => callToActionBtn.textContent, callToActionBtn);
+        //     console.log("버튼상태: " + btnText);
+        //
+        //     if (btnText == possibleBtn) {
+        //         console.log("현재 상태 광고 참여 가능합니다. 이어서 진행합니다.");
+        //         await page.click("#app > div:nth-child(2) > div > div > div > button"); // 포인트 받기 버튼
+        //         await page.waitForTimeout(3000);
+        //
+        //     }
+        //
+        //     let completionBtn = "\n" + "                  참여 완료\n" + "              ";
+        //     if (btnText == completionBtn) {
+        //         console.log("광고 참여 완료가 확인되어 출첵이 되지 않았습니다.\n");
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayResult3.png', fullPage: false
+        //         });
+        //         await page.waitForTimeout(1000);
+        //     }
+        //
+        //     let endAd = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+        //     const modal = await page.$("#app > div.blocker.current > div > div:nth-child(1)");
+        //     const modalText = await page.evaluate(modal => modal.textContent, modal);
+        //     console.log("알림창 내용: " + modalText);
+        //
+        //     if (modalText == endAd) {
+        //         await page.screenshot({
+        //             path: 'Screenshot/NPayEnd3.png', fullPage: false
+        //         });
+        //         console.log("광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+        //         // return;
+        //     }
+        //
+        // } catch (e) {
+        //     await page.screenshot({
+        //         path: 'Screenshot/NPaySuccess3.png', fullPage: false
+        //     });
+        //     console.log("3차 적립을 성공하였습니다.");
+        // }
+        finally {
             let today = new Date();
             console.log("네이버 페이 포인트 줍기를 완료하였습니다.\n적립이 되었는지 실제로 확인 하십시오.\n완료 시각: " + today.toLocaleString());
         }
