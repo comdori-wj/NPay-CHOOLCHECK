@@ -68,10 +68,10 @@ if (!config.id || !config.pw) {
 
     // await page.goto("https://naver.com"); // 모바일 웹 뜨는지 테스트
 
-    // await login(job1_1); // 자정
+    // await login(job1_1); // 00시 자정
     // await login(job1_2); // 8시
     // await login(job1_3); // 9시 1차, 2차
-    // await login(job2); // 매일 적립
+    // await login(job2); // 10시 매일 적립
 
     try {
         let today = new Date();
