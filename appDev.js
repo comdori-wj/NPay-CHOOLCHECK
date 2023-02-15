@@ -27,6 +27,7 @@
  * 2023/02/13        wj       오전 12시, 8시, 9시, 10시 시간대별 광고 추가
  * 2023/02/14        wj       시간대별 광고 사용자 메시지 알림 수정, 광고 종료 여부 확인 알고리즘 추가, 일부 코드 수정
  * 2023/02/14        wj       9시 2차 광고 접속 버그 수정
+ * 2023/02/15        wj       9시 광고 오류 수정
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -404,29 +405,31 @@ if (!config.id || !config.pw) {
                 });
                 console.log("9시 1차 광고를 이미 온라인 폐지 줍기 하셨습니다. 9시 2차 적립으로 진행합니다.");
             }
-
-            //////// 화면 이동후 광고 종료 여부 확인 //////////////
-
-            await page.waitForTimeout(3000); // 페이지 이동후 잠시 대기
-
-            let endAd2 = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-
-
-            const modal2 = await page.$("body > div.blocker.current > div > div:nth-child(1)");
-            const modalText2 = await page.evaluate(modal2 => modal2.textContent, modal2);
-            console.log("알림창 내용: " + modalText2);
-            if (modalText2 == endAd2) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEnd1_3_1.png', fullPage: false
-                });
-                console.log("9시 1차 광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-            }
-
+            //
+            // //////// 화면 이동후 광고 종료 여부 확인 //////////////
+            //
+            // await page.waitForTimeout(3000); // 페이지 이동후 잠시 대기
+            //
+            // let endAd2 = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+            //
+            //
+            // const modal2 = await page.$("body > div.blocker.current > div > div:nth-child(1)");
+            // const modalText2 = await page.evaluate(modal2 => modal2.textContent, modal2);
+            // console.log("알림창 내용: " + modalText2);
+            // if (modalText2 == endAd2) {
+            //     await page.screenshot({
+            //         path: 'Screenshot/NPayEnd1_3_1.png', fullPage: false
+            //     });
+            //     console.log("9시 1차 광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+            // }
+            //
             await page.screenshot({
                 path: 'Screenshot/NPay1_3_1.png', fullPage: false
             });
             console.log("9시 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+
             await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+
         } catch (e) {
             let errorMsg = "9시 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
             await page.screenshot({
@@ -462,26 +465,28 @@ if (!config.id || !config.pw) {
                 });
                 console.log("9시 2차 광고를 이미 온라인 폐지 줍기 하셨습니다.");
             }
-
-            //////// 화면 이동후 광고 종료 여부 확인 //////////////
-
-            await page.waitForTimeout(3000); // 페이지 이동후 잠시 대기
-            let endAd2 = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
-            const modal2 = await page.$("body > div.blocker.current > div > div:nth-child(1)");
-            const modalText2 = await page.evaluate(modal2 => modal2.textContent, modal2);
-            console.log("알림창 내용: " + modalText2);
-            if (modalText2 == endAd2) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEnd1_3_2.png', fullPage: false
-                });
-                console.log("9시 2차 광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
-            }
-
+            //
+            // //////// 화면 이동후 광고 종료 여부 확인 //////////////
+            //
+            // await page.waitForTimeout(3000); // 페이지 이동후 잠시 대기
+            // let endAd2 = "광고 참여가 종료되었습니다.다른 광고를 이용해 주세요 ";
+            // const modal2 = await page.$("body > div.blocker.current > div > div:nth-child(1)");
+            // const modalText2 = await page.evaluate(modal2 => modal2.textContent, modal2);
+            // console.log("알림창 내용: " + modalText2);
+            // if (modalText2 == endAd2) {
+            //     await page.screenshot({
+            //         path: 'Screenshot/NPayEnd1_3_2.png', fullPage: false
+            //     });
+            //     console.log("9시 2차 광고가 종료되어 출첵을 실패하였습니다. 확인후 다시 시도 해주세요.");
+            // }
 
             await page.screenshot({
                 path: 'Screenshot/NPay1_3_2.png', fullPage: false
             });
             console.log("9시 2차 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+
+            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+
         } catch (e) {
             let errorMsg = "9시 2차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
             await page.screenshot({
@@ -489,7 +494,6 @@ if (!config.id || !config.pw) {
             });
             throw Error(errorMsg + e);
         }
-
 
     }
 
