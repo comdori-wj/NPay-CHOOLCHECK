@@ -1,6 +1,6 @@
 # Author : WJ
 # Revision Date : 2022/12/23
-# Modified Date : 2023/01/01
+# Modified Date : 2023/02/15
 
 # Reference 참고
 # https://thumbsu.tistory.com/14 yarn 명령어 사용법
@@ -27,7 +27,8 @@ WORKDIR /app
 # 내부 실행 파일 복사
 COPY package.json ./
 COPY package-lock.json ./
-COPY index.js ./
+COPY app.js ./
+#COPY index.js ./
 COPY config.js ./
 
 RUN apk update
@@ -64,5 +65,5 @@ CMD [ "npm", "start" ]
 
 # 빌드 및 tar파일 생성 방법
 # docker build -t npay-choolcheck:[버전] .
-# sudo docker commit -p [컨테이너ID] npay-choolcheck:[버전]
-# sudo docker save -o npay-choolcheck-[버전].tar npay-choolcheck:[버전]
+# docker commit -p [컨테이너ID] npay-choolcheck:[버전]
+# docker save -o npay-choolcheck-[버전].tar npay-choolcheck:[버전]
