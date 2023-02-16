@@ -77,7 +77,7 @@ RUN npm install --unsafe-perm
 # 인자값을 지정하지 않을시 node app.js를 실행
 CMD [ "npm", "start" ]
 
-# 빌드 및 tar파일 생성 방법드
+# 빌드 및 tar파일 생성 방법
 # docker build -t npay-choolcheck:[버전] .
 # docker commit -p [컨테이너ID] npay-choolcheck:[버전]
 # docker save -o npay-choolcheck-[버전].tar npay-choolcheck:[버전]
