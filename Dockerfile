@@ -9,6 +9,7 @@
 # https://magpienote.tistory.com/149 Docker로 express 개발 환경 구성하기
 # https://blog.naver.com/chandong83/221006388637 도커 이미지 tar만들기
 # https://www.leafcats.com/240 docker image를 tar 파일로 저장 (export / import / save / load)
+# https://lahuman.github.io/dockerfile_alpine_puppeteer/ [Dockerfile] node:Alpine에서 puppeteer 기동 & 한글 깨짐 처리
 
 FROM alpine
 #FROM node:alpine
