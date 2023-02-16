@@ -28,6 +28,7 @@
  * 2023/02/14        wj       시간대별 광고 사용자 메시지 알림 수정, 광고 종료 여부 확인 알고리즘 추가, 일부 코드 수정
  * 2023/02/14        wj       9시 2차 광고 접속 버그 수정
  * 2023/02/15        wj       9시 광고 오류 수정
+ * 2023/02/17        wj       8시 광고 비활성화 및 코드 정리
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -68,10 +69,8 @@ if (!config.id || !config.pw) {
     //     width: 1280, height: 1024
     // }); // 화면 크기
 
-    // await page.goto("https://naver.com"); // 모바일 웹 뜨는지 테스트
-
     // await login(job1_1); // 00시 자정
-    // await login(job1_2); // 8시
+    // await login(job1_2); // 8시 종료
     // await login(job1_3); // 9시 1차, 2차
     // await login(job2); // 10시 매일 적립
 
@@ -85,15 +84,15 @@ if (!config.id || !config.pw) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
-    try {
-        let today = new Date();
-        schedule.scheduleJob('02 00 08 * * *', () => { // 매일 오전 08시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
-            login(job1_2) // 네이버 로그인후 8시 광고 함수 실행
-        });
-    } catch (e) {
-        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    }
+    // try {
+    //     let today = new Date();
+    //     schedule.scheduleJob('02 00 08 * * *', () => { // 매일 오전 08시 프로그램 작동
+    //         console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+    //         login(job1_2) // 네이버 로그인후 8시 광고 함수 실행
+    //     });
+    // } catch (e) {
+    //     throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
+    // }
 
     try {
         let today = new Date();
@@ -212,9 +211,7 @@ if (!config.id || !config.pw) {
             });
             console.log("로그인을 성공하였습니다.");
         } catch (e) {
-
         }
-
         login(); // Callback 적용
     }
 
@@ -225,11 +222,8 @@ if (!config.id || !config.pw) {
             let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
             let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
 
-            // await page.goto('https://ofw.adison.co/u/naverpay/ads/298919'); // 나이키 와플
             await page.goto('https://ofw.adison.co/u/naverpay/ads/343265'); // 나이키 인기 신발
-
             await page.waitForTimeout(1000); // 접속 대기
-
             const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
             const modalText = await page.evaluate(modal => modal.textContent, modal);
             console.log("알림창 내용: " + modalText);
@@ -337,46 +331,46 @@ if (!config.id || !config.pw) {
         // }
 
     }
-    async function job1_2() {
-        //////////////////// 8시 광고 ////////////////////
-        try {
-            let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
-            let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
-
-            await page.goto('https://ofw.adison.co/u/naverpay/ads/348514'); // 갤럭시 온라인 체험존
-
-            await page.waitForTimeout(1000); // 접속 대기
-
-            const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
-            const modalText = await page.evaluate(modal => modal.textContent, modal);
-            console.log("알림창 내용: " + modalText);
-
-            if (modalText == endAd) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayEndAd1_2.png', fullPage: false
-                });
-                console.log("8시 광고 온라인 폐지가 소진 되어 종료되었습니다.");
-            }
-            if (modalText == alreadyDone) {
-                await page.screenshot({
-                    path: 'Screenshot/NPayAlreadyDone1_2.png', fullPage: false
-                });
-                console.log("8시 광고를 이미 온라인 폐지 줍기 하셨습니다.");
-            }
-
-            await page.screenshot({
-                path: 'Screenshot/NPay1_2.png', fullPage: false
-            });
-            console.log("8시 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
-            await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
-        } catch (e) {
-            let errorMsg = "8시 광고 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
-            await page.screenshot({
-                path: 'Screenshot/NPayFailAccess1_2.png', fullPage: false
-            });
-            throw Error(errorMsg + e);
-        }
-    }
+    // async function job1_2() {
+    //     //////////////////// 8시 광고 ////////////////////
+    //     try {
+    //         let alreadyDone = "클릭 적립은 캠페인당 1회만 적립 됩니다.2초 뒤 다음 페이지로 이동 합니다.";
+    //         let endAd = "준비된 클릭 적립이 모두 소진 되었습니다.2초 뒤 다음 페이지로 이동 합니다.";
+    //
+    //         await page.goto('https://ofw.adison.co/u/naverpay/ads/348514'); // 갤럭시 온라인 체험존
+    //
+    //         await page.waitForTimeout(1000); // 접속 대기
+    //
+    //         const modal = await page.$("body > div.cpc_popup > div > div.dim > p");
+    //         const modalText = await page.evaluate(modal => modal.textContent, modal);
+    //         console.log("알림창 내용: " + modalText);
+    //
+    //         if (modalText == endAd) {
+    //             await page.screenshot({
+    //                 path: 'Screenshot/NPayEndAd1_2.png', fullPage: false
+    //             });
+    //             console.log("8시 광고 온라인 폐지가 소진 되어 종료되었습니다.");
+    //         }
+    //         if (modalText == alreadyDone) {
+    //             await page.screenshot({
+    //                 path: 'Screenshot/NPayAlreadyDone1_2.png', fullPage: false
+    //             });
+    //             console.log("8시 광고를 이미 온라인 폐지 줍기 하셨습니다.");
+    //         }
+    //
+    //         await page.screenshot({
+    //             path: 'Screenshot/NPay1_2.png', fullPage: false
+    //         });
+    //         console.log("8시 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
+    //         await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+    //     } catch (e) {
+    //         let errorMsg = "8시 광고 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
+    //         await page.screenshot({
+    //             path: 'Screenshot/NPayFailAccess1_2.png', fullPage: false
+    //         });
+    //         throw Error(errorMsg + e);
+    //     }
+    // }
 
     //////////////////// 9시 광고 함수 ////////////////////
     async function job1_3() {
@@ -496,7 +490,6 @@ if (!config.id || !config.pw) {
         }
 
     }
-
 
 
     //////////////////// 매일적립 광고 함수 ////////////////////
