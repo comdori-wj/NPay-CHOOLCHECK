@@ -53,12 +53,39 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Docker.n">
-    <configuration name="Docker" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+  <component name="RunManager" selected="Docker.DockerfileR: Compose 배포">
+    <configuration name="DockerfileR: Compose 배포" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
       <deployment type="dockerfile">
         <settings>
           <option name="containerName" value="" />
-          <option name="sourceFilePath" value="Dockerfile" />
+          <option name="sourceFilePath" value="DockerfileR" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="DockerfileR: Compose 배포" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="containerName" value="" />
+          <option name="sourceFilePath" value="DockerfileR" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="DockerfileR: Compose 배포" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="containerName" value="" />
+          <option name="sourceFilePath" value="DockerfileR" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="DockerfileR: Compose 배포" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="containerName" value="" />
+          <option name="sourceFilePath" value="DockerfileR" />
         </settings>
       </deployment>
       <method v="2" />
@@ -66,33 +93,6 @@
     <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
       <deployment type="docker-compose.yml">
         <settings />
-      </deployment>
-      <method v="2" />
-    </configuration>
-    <configuration name="n" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
-      <deployment type="dockerfile">
-        <settings>
-          <option name="containerName" value="" />
-          <option name="sourceFilePath" value="Dockerfile" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
-    <configuration name="npay" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
-      <deployment type="dockerfile">
-        <settings>
-          <option name="containerName" value="" />
-          <option name="sourceFilePath" value="Dockerfile" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
-    <configuration name="ss" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
-      <deployment type="dockerfile">
-        <settings>
-          <option name="containerName" value="" />
-          <option name="sourceFilePath" value="Dockerfile" />
-        </settings>
       </deployment>
       <method v="2" />
     </configuration>
@@ -152,7 +152,7 @@
       <workItem from="1676307883310" duration="3028000" />
       <workItem from="1676342321382" duration="514000" />
       <workItem from="1676477362914" duration="230000" />
-      <workItem from="1676565582498" duration="2227000" />
+      <workItem from="1676565582498" duration="3427000" />
     </task>
     <servers />
   </component>

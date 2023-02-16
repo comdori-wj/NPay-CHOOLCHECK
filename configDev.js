@@ -9,6 +9,7 @@
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/01/11        wj       최초 생성, 도커 환경변수에서 프로그램 사용 동의서 및 계정 정보를 입력 할 수 있도록 변경.
+ * 2023/02/17        wj       동의 항목 주석 제거
  */
 
 const config = {
@@ -17,7 +18,6 @@ const config = {
     // 동의하시면 agree 항목의 값을 [true]로 변경하시기 바랍니다.
 
     agree: process.env.AGREE,
-    // agree: true,
     puppeteer: {
         launchOptions: {
             // defaultViewport: null,
