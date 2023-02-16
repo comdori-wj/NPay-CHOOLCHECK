@@ -1,6 +1,6 @@
 # Author : WJ
 # Revision Date : 2022/12/23
-# Modified Date : 2023/02/15
+# Modified Date : 2023/02/17
 
 # Reference 참고
 # https://thumbsu.tistory.com/14 yarn 명령어 사용법
@@ -28,11 +28,21 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 COPY app.js ./
-#COPY index.js ./
 COPY config.js ./
 
 RUN apk update
 RUN apk upgrade
+
+# 한글 폰트 설치
+RUN apk add fontconfig
+RUN mkdir -p /usr/share/fonts
+RUN cd /usr/share/fonts
+RUN wget http://cdn.naver.com/naver/NanumFont/fontfiles/NanumFont_TTF_ALL.zip
+RUN unzip NanumFont_TTF_ALL.zip -d /usr/share/fonts/nanumfont
+RUN fc-cache -f -v
+
+# 앱 디렉토리로 다시 이동
+RUN cd /app
 
 RUN apk add --no-cache \
       chromium \
@@ -57,13 +67,17 @@ RUN apk --no-cache add tzdata && \
         cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
         echo "Asia/Seoul" > /etc/timezone
 
+# Set the lang
+ENV LANG=ko_KR.UTF-8 \
+    LANGUAGE=ko_KR.UTF-8
+
 # node module 설치
 RUN npm install --unsafe-perm
 
 # 인자값을 지정하지 않을시 node app.js를 실행
 CMD [ "npm", "start" ]
 
-# 빌드 및 tar파일 생성 방법
+# 빌드 및 tar파일 생성 방법드
 # docker build -t npay-choolcheck:[버전] .
 # docker commit -p [컨테이너ID] npay-choolcheck:[버전]
 # docker save -o npay-choolcheck-[버전].tar npay-choolcheck:[버전]
