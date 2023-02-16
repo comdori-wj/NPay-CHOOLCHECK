@@ -1,12 +1,12 @@
 {
   "name": "NPay-CHOOLCHECK",
-  "version": "1.0.15",
-  "main": "index.js",
+  "version": "1.0.16",
+  "main": "app.js",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "node-schedule": "^2.1.0",
