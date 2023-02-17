@@ -29,9 +29,8 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 COPY app.js ./
-#COPY config.js ./
+COPY config.js ./
 
-COPY configDev.js ./
 
 # 한글 폰트 설치
 RUN apk add fontconfig
