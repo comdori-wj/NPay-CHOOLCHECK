@@ -53,7 +53,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Docker.DockerfileR: Compose 배포">
+  <component name="RunManager">
     <configuration name="DockerfileR: Compose 배포" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
       <deployment type="dockerfile">
         <settings>
@@ -152,7 +152,8 @@
       <workItem from="1676307883310" duration="3028000" />
       <workItem from="1676342321382" duration="514000" />
       <workItem from="1676477362914" duration="230000" />
-      <workItem from="1676565582498" duration="3578000" />
+      <workItem from="1676565582498" duration="4731000" />
+      <workItem from="1676648230865" duration="971000" />
     </task>
     <servers />
   </component>
