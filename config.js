@@ -15,6 +15,8 @@
  * 2022/12/13        wj       코드 정리
  * 2023/01/01        wj       배포용 수정
  * 2023/01/02        wj       로그인 아이디&비밀번호를 임의 계정 입력후 테스트 진행(indexDev)
+ * 2023/02/18        wj       도커 환경변수 항목 프로그램 사용 동의서, 네이버 아이디, 비밀번호 입력 받기 추가
+ *
  */
 
 const config = {
@@ -22,7 +24,7 @@ const config = {
     // 이 앱을 사용해서 발생하는 모든 문제는 사용자 본인 책임임을 알려드립니다.
     // 동의하시면 agree 항목의 값을 [true]로 변경하시기 바랍니다.
 
-    agree: true,
+    agree: process.env.AGREE,
     puppeteer: {
         launchOptions: {
             // defaultViewport: null,
@@ -30,7 +32,7 @@ const config = {
             // headless: false, // 브라우저 띄움
             // slowMo: 500,
             executablePath: process.env.CHROMIUM_PATH,
-            args: ['--no-sandbox']
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
 
         },
         viewportOptions: {
@@ -38,8 +40,9 @@ const config = {
             height: 1024,
         },
     },
-    id: '',
-    pw: ''
+    id: process.env.ID,
+    pw: process.env.PW
+
 }
 
 export default config
