@@ -10,13 +10,12 @@
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/02/17        wj       최초 생성 후 도커 이미지 빌드 1.0.16
+ * 2023/02/18        wj       도커 이미지 빌드 1.0.17
  */
 
 import puppeteer, {KnownDevices} from 'puppeteer'; // 퍼펫티어 라이브러리, 모바일 에뮬레이터 라이브러리
 import config from './config.js'; // 설정 파일
 import schedule from 'node-schedule'; // 특정시간 함수 실행 라이브러리
-
-// import config from './configDev.js'; //도커 환경변수 추가 설정 파일
 
 if (!config.agree) {
     throw Error('config.js에서 동의를 해 주시기 바랍니다.');
@@ -35,6 +34,8 @@ if (!config.id || !config.pw) {
     }
 
     console.log("네이버 페이 출첵 프로그램이 실행되었습니다.");
+    console.log("네이버 아이디 ["+config.id+"]으로 네이버 페이 포인트가 적립 될 예정입니다.");
+
 
     const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
     const iPhone = KnownDevices['iPhone 13 Pro']; // 에뮬을 아이폰13프로 지정
