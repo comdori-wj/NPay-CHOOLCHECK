@@ -29,7 +29,8 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 COPY app.js ./
-COPY config.js ./
+#COPY config.js ./
+COPY configDev.js ./
 
 RUN apk update
 RUN apk upgrade
