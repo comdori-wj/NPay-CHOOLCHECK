@@ -11,6 +11,7 @@
  * 2023/01/11        wj       최초 생성, 도커 환경변수에서 프로그램 사용 동의서 및 계정 정보를 입력 할 수 있도록 변경.
  * 2023/02/17        wj       동의 항목 주석 제거
  * 2023/02/18        wj       도커 환경변수 항목 config.js로 마이그레이션후 이전 버전 복원(개발용으로 사용될 예정)
+ * 2023/02/23        wj       개발용 셋팅(도커 환경변수 x)
  */
 
 const config = {
@@ -23,7 +24,7 @@ const config = {
         launchOptions: {
             // defaultViewport: null,
             // devtools: true,
-            // headless: false, // 브라우저 띄움
+            headless: false, // 브라우저 띄움
             // slowMo: 500,
             executablePath: process.env.CHROMIUM_PATH,
             args: ['--no-sandbox']
