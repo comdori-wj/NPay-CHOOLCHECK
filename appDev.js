@@ -77,16 +77,6 @@ if (!config.id || !config.pw) {
     // await login(job1_3); // 9시 1차, 2차
     // await login(job2); // 10시 매일 적립
 
-    try {
-        let today = new Date();
-        schedule.scheduleJob('01 00 00 * * *', () => { // 매일 오전 12시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 자정 네이버 페이 자동 출첵이 시작되었습니다.");
-            login(job1_1) // 네이버 로그인후 자정광고 함수 실행
-        });
-    } catch (e) {
-        throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
-    }
-
 
     try {
         let today = new Date();
@@ -271,7 +261,6 @@ if (!config.id || !config.pw) {
         }
 
     }
-
 
     //////////////////// 매일적립 광고 함수 ////////////////////
     async function job2() {
