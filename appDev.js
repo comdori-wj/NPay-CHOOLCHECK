@@ -32,13 +32,14 @@
  * 2023/02/18        wj       네이버 페이 포인트 적립될 아이디 알림 메시지 추가
  * 2023/02/23        wj       9시 광고 시작 시간 조정(웰컴저축 광고 포인트 얻기 실패로 인하여)
  * 2023/02/25        wj       9시 광고 시작 시간 조정(웰컴저축 광고 포인트 얻기 실패로 인하여)
- * 2023/03/06        wj       종료된 광고 정리 및 코드 정리, 9시 광고 시작 시간 조정
+ * 2023/03/06        wj       종료된 광고 정리, 광고 실행후 브라우저 종료(CPU, 램 점유율 정리) 기능 추가, 9시 광고 시간 조정, 사용하지 않는 코드 정리
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
  * [ 파이썬 ] 네이버 자동 로그인 후 클릭 이벤트 응모하기 : https://jeong-f.tistory.com/148
  * [Javascript] 콜백 (Callback) 함수 사용 방법 : https://koonsland.tistory.com/159
  * Page.emulate() 메서드 사용방법, KnownDevices variable : https://pptr.dev/api/puppeteer.knowndevices
+ * JavaScript - 함수의 매개변수(Parameter), 전역변수, 지역변수 : https://jenny-daru.tistory.com/13
  */
 
 import puppeteer, {KnownDevices} from 'puppeteer'; // 퍼펫티어 라이브러리, 모바일 에뮬레이터 라이브러리
@@ -53,20 +54,40 @@ if (!config.id || !config.pw) {
     throw Error("ID, 비밀번호가 없습니다. 확인 후 다시 시도 해주세요.");
 }
 
-(async () => {
-    let browser;
+console.log("네이버 페이 출첵 프로그램이 실행되었습니다.");
+console.log("네이버 아이디 ["+config.id+"]으로 네이버 페이 포인트가 적립 될 예정입니다.");
+
+let browser, page; // 전역변수 (함수 안과 밖에서 사용)
+async function browserOn() {
+
     try {
         browser = await puppeteer.launch(config.puppeteer.launchOptions);
     } catch (e) {
         throw Error("브라우저를 실행 할 수 없습니다: " + e);
     }
 
-    console.log("네이버 페이 출첵 프로그램이 실행되었습니다.");
-    console.log("네이버 아이디 ["+config.id+"]으로 네이버 페이 포인트가 적립 될 예정입니다.");
-
-    const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
+    page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
     const iPhone = KnownDevices['iPhone 13 Pro']; // 에뮬을 아이폰13프로 지정
     await page.emulate(iPhone);
+    console.log("브라우저가 켜졌습니다.");
+
+    return [browser, page]; // 변수 반환
+
+}
+
+
+(async () => {
+
+    // let browser;
+    // try {
+    //     browser = await puppeteer.launch(config.puppeteer.launchOptions);
+    // } catch (e) {
+    //     throw Error("브라우저를 실행 할 수 없습니다: " + e);
+    // }
+    //
+    // const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
+    // const iPhone = KnownDevices['iPhone 13 Pro']; // 에뮬을 아이폰13프로 지정
+    // await page.emulate(iPhone);
 
     // await page.setViewport({
     //     width: 1280, height: 1024
@@ -77,10 +98,9 @@ if (!config.id || !config.pw) {
     // await login(job1_3); // 9시 1차, 2차
     // await login(job2); // 10시 매일 적립
 
-
     try {
         let today = new Date();
-        schedule.scheduleJob('59 59 08 * * *', () => { // 매일 오전 09시 프로그램 작동
+        schedule.scheduleJob('58 59 08 * * *', () => { // 매일 오전 09시 프로그램 작동
             console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             login(job1_3) // 네이버 로그인후 9시 광고 함수 실행
         });
@@ -88,10 +108,9 @@ if (!config.id || !config.pw) {
         throw  Error("시간에 맞춰 실행하지 못하였습니다. 수동적립후 오류를 확인 해주세요.\n" + e);
     }
 
-
     try {
         let today = new Date();
-        schedule.scheduleJob('02 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
+        schedule.scheduleJob('01 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
             console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             login(job2) // 네이버 로그인후 10시 광고 함수 실행
         });
@@ -101,8 +120,10 @@ if (!config.id || !config.pw) {
 
     //////////////////// 네이버 로그인 함수 ////////////////////
     async function login(login){
-        //////////////////// 네이버 로그인 계정 입력 ////////////////////
 
+        let [browser, page] = await browserOn(); // 브라우저 실행
+
+        //////////////////// 네이버 로그인 계정 입력 ////////////////////
         await page.goto("https://nid.naver.com/nidlogin.login"); // 로그인 페이지로 이동
         try {
             await page.waitForTimeout(1000); // 로그인 페이지 로딩 대기
@@ -146,10 +167,6 @@ if (!config.id || !config.pw) {
                 }
 
             } catch (e) {
-                // await page.screenshot({
-                //     path: 'Screenshot/loginOk.png', fullPage: false
-                // });
-                // console.log("로그인을 성공하였습니다.");
             }
 
             try {
@@ -164,9 +181,6 @@ if (!config.id || !config.pw) {
                 }
 
             } catch (e) {
-                // await page.screenshot({
-                //     path: 'Screenshot/loginOk.png', fullPage: false
-                // });
             }
 
             try {
@@ -184,11 +198,6 @@ if (!config.id || !config.pw) {
                 }
 
             } catch (e) {
-                // await page.screenshot({
-                //     path: 'Screenshot/loginOk.png', fullPage: false
-                // });
-                // console.log("로그인을 성공하였습니다.");
-                // await ad1(); // 1차 광고 실행
             }
             await page.screenshot({
                 path: 'Screenshot/loginOk.png', fullPage: false
@@ -251,6 +260,8 @@ if (!config.id || !config.pw) {
             console.log("9시 1차 광고 페이지에 접속하였지만, 포인트 적립이 되었는지는 확인하세요!")
 
             await page.waitForTimeout(7000); // 2초후 자동 페이지 이동 대기
+            await browser.close(); // 메모리 해제
+            console.log("CPU, 램 점유율을 낮추기 위해 브라우저를 닫았습니다.");
 
         } catch (e) {
             let errorMsg = "9시 1차 적립 페이지에 접속 할 수 없습니다. 다시 확인후 재시도 해주십시오."
@@ -383,6 +394,10 @@ if (!config.id || !config.pw) {
                 path: 'Screenshot/NPaySuccess3.png', fullPage: false
             });
             console.log("3차 적립을 성공하였습니다.");
+
+            await browser.close(); // 메모리 해제
+            console.log("CPU, 램 점유율을 낮추기 위해 브라우저를 닫았습니다.");
+
         }
         finally {
             let today = new Date();
