@@ -33,6 +33,7 @@
  * 2023/02/23        wj       9시 광고 시작 시간 조정(웰컴저축 광고 포인트 얻기 실패로 인하여)
  * 2023/02/25        wj       9시 광고 시작 시간 조정(웰컴저축 광고 포인트 얻기 실패로 인하여)
  * 2023/03/06        wj       종료된 광고 정리, 광고 실행후 브라우저 종료(CPU, 램 점유율 정리) 기능 추가, 9시 광고 시간 조정, 사용하지 않는 코드 정리
+ * 2023/03/08        wj       광고 시작 메시지 수정, 9시 광고 시간 조정(웰컴저축 광고), 코드 정리
  */
 /* Reference
  * 파이썬 - 셀레니움으로 네이버 로그인하기, 캡차(보안문자) 우회 : https://private.tistory.com/119
@@ -75,23 +76,7 @@ async function browserOn() {
 
 }
 
-
 (async () => {
-
-    // let browser;
-    // try {
-    //     browser = await puppeteer.launch(config.puppeteer.launchOptions);
-    // } catch (e) {
-    //     throw Error("브라우저를 실행 할 수 없습니다: " + e);
-    // }
-    //
-    // const page = (await browser.pages())[0]; // 첫 번째 탭에서 시작.
-    // const iPhone = KnownDevices['iPhone 13 Pro']; // 에뮬을 아이폰13프로 지정
-    // await page.emulate(iPhone);
-
-    // await page.setViewport({
-    //     width: 1280, height: 1024
-    // }); // 화면 크기
 
     // await login(job1_1); // 00시 자정
     // await login(job1_2); // 8시 종료
@@ -100,8 +85,8 @@ async function browserOn() {
 
     try {
         let today = new Date();
-        schedule.scheduleJob('58 59 08 * * *', () => { // 매일 오전 09시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+        schedule.scheduleJob('55 59 08 * * *', () => { // 매일 오전 09시 프로그램 작동
+            console.log("[오전9시 광고] 현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             login(job1_3) // 네이버 로그인후 9시 광고 함수 실행
         });
     } catch (e) {
@@ -111,7 +96,7 @@ async function browserOn() {
     try {
         let today = new Date();
         schedule.scheduleJob('01 00 10 * * *', () => { // 매일 오전 10시 프로그램 작동
-            console.log("현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
+            console.log("[오전10시 매일적립 광고] 현재 시간: " + today.toLocaleString() + " 네이버 페이 자동 출첵이 시작되었습니다.");
             login(job2) // 네이버 로그인후 10시 광고 함수 실행
         });
     } catch (e) {
